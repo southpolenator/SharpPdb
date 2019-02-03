@@ -14,7 +14,7 @@ namespace SharpPdb.Windows
         /// <summary>
         /// Internal symbol reference structure.
         /// </summary>
-        internal struct SymbolReference
+        public struct SymbolReference
         {
             /// <summary>
             /// Offset of the symbol record data in the stream.
@@ -35,7 +35,7 @@ namespace SharpPdb.Windows
         /// <summary>
         /// List of all symbol references in this stream.
         /// </summary>
-        internal List<SymbolReference> references;
+        private List<SymbolReference> references;
 
         /// <summary>
         /// Dictionary cache of symbols by its kind.
@@ -87,6 +87,11 @@ namespace SharpPdb.Windows
         /// Gets the stream binary reader.
         /// </summary>
         public IBinaryReader Reader { get; private set; }
+
+        /// <summary>
+        /// Gets the read-only list of all symbol references in this stream.
+        /// </summary>
+        public IReadOnlyList<SymbolReference> References => references;
 
         /// <summary>
         /// Indexing operator for getting all symbols of the given kind.

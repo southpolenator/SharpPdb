@@ -29,17 +29,28 @@ namespace SharpPdb.Windows.TPI
         /// <summary>
         /// Internal type record reference structure.
         /// </summary>
-        internal struct RecordReference
+        public struct RecordReference
         {
+            /// <summary>
+            /// Offset of the record data in the stream.
+            /// </summary>
             public uint DataOffset;
+
+            /// <summary>
+            /// Record data length in bytes.
+            /// </summary>
             public ushort DataLen;
+
+            /// <summary>
+            /// Record kind.
+            /// </summary>
             public TypeLeafKind Kind;
         }
 
         /// <summary>
         /// List of all type record references in this stream.
         /// </summary>
-        internal List<RecordReference> references;
+        private List<RecordReference> references;
 
         /// <summary>
         /// Array cache of all types by index.
@@ -190,6 +201,11 @@ namespace SharpPdb.Windows.TPI
         /// Gets the hash substream.
         /// </summary>
         public IBinaryReader HashSubstream { get; private set; }
+
+        /// <summary>
+        /// Gets the list of all type record references in this stream.
+        /// </summary>
+        public IReadOnlyList<RecordReference> References => references;
 
         /// <summary>
         /// Gets the type records hash values.
