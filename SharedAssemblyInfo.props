@@ -1,0 +1,27 @@
+<Project>
+  <PropertyGroup>
+    <!-- Nuget properties -->
+    <AssemblyVersion>1.0</AssemblyVersion>
+    <FileVersion>1.0</FileVersion>
+    <VersionPrefix>1.0</VersionPrefix>
+    <Authors>SharpStar Team</Authors>
+    <Copyright>Copyright (C) SharpStar team 2015-2019</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/southpolenator/SharpPdb</PackageProjectUrl>
+    <!--<PackageIconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</PackageIconUrl>-->
+    <IncludeSymbols>True</IncludeSymbols>
+    <IncludeSource>True</IncludeSource>
+    <RepositoryUrl>https://github.com/southpolenator/SharpPdb.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <!-- Common properties for all projects -->
+    <EnlistmentRoot>$(MSBuildThisFileDirectory)</EnlistmentRoot>
+    <OutputPath>$(EnlistmentRoot)\bin\$(Configuration)\</OutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Nuget license file -->
+  <ItemGroup>
+    <None Include="$(EnlistmentRoot)LICENSE" Pack="true" PackagePath=""/>
+  </ItemGroup>
+</Project>

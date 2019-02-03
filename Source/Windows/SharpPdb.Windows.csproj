@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\SharedAssemblyInfo.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Nuget properties -->
+    <Description>Collection of .NET classes that read debug information from Windows PDB format.</Description>
+    <Summary>Collection of .NET classes that read debug information from Windows PDB format.</Summary>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpUtilities" Version="1.1.0" />
+  </ItemGroup>
+
+</Project>
