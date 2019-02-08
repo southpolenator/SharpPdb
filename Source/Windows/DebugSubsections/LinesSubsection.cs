@@ -102,7 +102,7 @@ namespace SharpPdb.Windows.DebugSubsections
         /// <summary>
         /// Gets the flags.
         /// </summary>
-        public ushort Flags { get; private set; }
+        public LinesSubsectionFlags Flags { get; private set; }
 
         /// <summary>
         /// TODO: Figure out what this represents?
@@ -128,10 +128,10 @@ namespace SharpPdb.Windows.DebugSubsections
                 Kind = kind,
                 CodeOffset = reader.ReadUint(),
                 Segment = reader.ReadUshort(),
-                Flags = reader.ReadUshort(),
+                Flags = (LinesSubsectionFlags)reader.ReadUshort(),
                 Cod = reader.ReadUint(),
             };
-            bool columnsAvailable = (linesSubsection.Flags & 1) != 0;
+            bool columnsAvailable = (linesSubsection.Flags & LinesSubsectionFlags.LinesHaveColumns) == LinesSubsectionFlags.LinesHaveColumns;
             List<SourceFile> files = new List<SourceFile>();
 
             while (reader.Position < positionEnd)
