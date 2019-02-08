@@ -23,7 +23,7 @@ namespace SharpPdb.Windows.DebugSubsections
         /// <summary>
         /// Gets the hash type.
         /// </summary>
-        public byte HashType { get; private set; }
+        public FileChecksumHashType HashType { get; private set; }
 
         /// <summary>
         /// Gets the hash data binary reader.
@@ -39,7 +39,7 @@ namespace SharpPdb.Windows.DebugSubsections
         {
             uint nameIndex = reader.ReadUint();
             byte hashLength = reader.ReadByte();
-            byte hashType = reader.ReadByte();
+            FileChecksumHashType hashType = (FileChecksumHashType)reader.ReadByte();
 
             reader.Align(4);
             return new FileChecksumSubsection
