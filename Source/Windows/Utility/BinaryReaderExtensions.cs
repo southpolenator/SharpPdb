@@ -9,6 +9,25 @@ namespace SharpPdb.Windows.Utility
     public static class BinaryReaderExtensions
     {
         /// <summary>
+        /// Reads <c>Guid</c> from the stream.
+        /// </summary>
+        public static Guid ReadGuid(this IBinaryReader reader)
+        {
+            return new Guid(
+                reader.ReadInt(),
+                reader.ReadShort(),
+                reader.ReadShort(),
+                reader.ReadByte(),
+                reader.ReadByte(),
+                reader.ReadByte(),
+                reader.ReadByte(),
+                reader.ReadByte(),
+                reader.ReadByte(),
+                reader.ReadByte(),
+                reader.ReadByte());
+        }
+
+        /// <summary>
         /// Reads <c>byte[]</c> from the stream.
         /// </summary>
         /// <param name="reader">Binary reader.</param>
@@ -65,6 +84,19 @@ namespace SharpPdb.Windows.Utility
 
             reader.Position += length;
             return result;
+        }
+
+        /// <summary>
+        /// Aligns binary reader to the specified number of alignment bytes.
+        /// </summary>
+        /// <param name="reader">Stream binary reader.</param>
+        /// <param name="alignment">Number of bytes to be aligned</param>
+        public static void Align(this IBinaryReader reader, long alignment)
+        {
+            long unaligned = reader.Position % alignment;
+
+            if (unaligned != 0)
+                reader.Position += alignment - unaligned;
         }
 
         /// <summary>

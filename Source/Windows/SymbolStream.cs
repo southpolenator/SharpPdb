@@ -47,13 +47,24 @@ namespace SharpPdb.Windows
         /// </summary>
         /// <param name="stream">PDB symbol stream.</param>
         public SymbolStream(PdbStream stream)
+            : this(stream.Reader)
         {
-            IBinaryReader reader = stream.Reader;
+            Stream = stream;
+        }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolStream"/> class.
+        /// </summary>
+        /// <param name="reader">Binary reader.</param>
+        /// <param name="end">End of the symbol stream in binary reader. If it is less than 0 or bigger than binary reader length, it will be read fully.</param>
+        public SymbolStream(IBinaryReader reader, long end = -1)
+        {
             Reader = reader;
             references = new List<SymbolReference>();
 
-            long position = reader.Position, end = reader.Length;
+            long position = reader.Position;
+            if (end < 0 || end > reader.Length)
+                end = reader.Length;
 
             while (position < end)
             {
@@ -153,6 +164,19 @@ namespace SharpPdb.Windows
                 case SymbolRecordKind.S_LTHREAD32:
                 case SymbolRecordKind.S_GTHREAD32:
                     return ThreadLocalDataSymbol.Read(Reader, reference.Kind);
+                case SymbolRecordKind.S_GMANPROC:
+                case SymbolRecordKind.S_LMANPROC:
+                    return ManagedProcedureSymbol.Read(Reader, reference.Kind);
+                case SymbolRecordKind.S_BLOCK32:
+                    return BlockSymbol.Read(Reader, reference.Kind);
+                case SymbolRecordKind.S_OEM:
+                    return OemSymbol.Read(Reader, reference.Kind, reference.DataLen);
+                case SymbolRecordKind.S_UNAMESPACE:
+                    return NamespaceSymbol.Read(Reader, reference.Kind);
+                case SymbolRecordKind.S_MANSLOT:
+                    return AttributeSlotSymbol.Read(Reader, reference.Kind);
+                case SymbolRecordKind.S_END:
+                    return EndSymbol.Read(Reader, reference.Kind);
                 default:
                     throw new NotImplementedException();
             }

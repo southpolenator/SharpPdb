@@ -1,4 +1,6 @@
-﻿namespace SharpPdb.Windows.Utility
+﻿using System.Text;
+
+namespace SharpPdb.Windows.Utility
 {
     /// <summary>
     /// Class that implements <see cref="IBinaryReader"/> for <see cref="MMFile"/> as stream.
@@ -144,6 +146,20 @@
                 end++;
             pointer = end + 1;
             return new string((sbyte*)start, 0, (int)(end - start));
+        }
+
+        /// <summary>
+        /// Reads C-style wide (2 bytes) string (null terminated) from the stream.
+        /// </summary>
+        public string ReadCStringWide()
+        {
+            ushort* start = (ushort*)pointer;
+            ushort* end = start;
+
+            while (*end != 0)
+                end++;
+            pointer = (byte*)(end + 1);
+            return Encoding.Unicode.GetString((byte*)start, (int)((byte*)end - (byte*)start));
         }
 
         /// <summary>

@@ -114,7 +114,7 @@ namespace SharpPdb.Windows.DBI
             {
                 ModuleInfoSubstream.Position = 0;
                 FileInfoSubstream.Position = 0;
-                return new DbiModuleList(ModuleInfoSubstream, FileInfoSubstream);
+                return new DbiModuleList(ModuleInfoSubstream, FileInfoSubstream, this);
             });
             if (SectionContributionSubstream.Length > 0)
             {

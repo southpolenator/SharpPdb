@@ -61,6 +61,11 @@
         string ReadCString();
 
         /// <summary>
+        /// Reads C-style wide (2 bytes) string (null terminated) from the stream.
+        /// </summary>
+        string ReadCStringWide();
+
+        /// <summary>
         /// Moves position by the specified bytes.
         /// </summary>
         /// <param name="bytes">Number of bytes to move the stream.</param>

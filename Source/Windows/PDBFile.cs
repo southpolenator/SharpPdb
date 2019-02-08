@@ -1,5 +1,6 @@
 ﻿using SharpPdb.Windows.DBI;
 using SharpPdb.Windows.MSF;
+using SharpPdb.Windows.PIS;
 using SharpPdb.Windows.TPI;
 using SharpPdb.Windows.Utility;
 using SharpUtilities;
@@ -25,6 +26,11 @@ namespace SharpPdb.Windows
         /// Cache for <see cref="DbiStream"/>.
         /// </summary>
         private SimpleCacheStruct<DbiStream> dbiStreamCache;
+
+        /// <summary>
+        /// Cache for <see cref="InfoStream"/>.
+        /// </summary>
+        private SimpleCacheStruct<InfoStream> infoStreamCache;
 
         /// <summary>
         /// Cache for <see cref="PdbSymbolStream"/>.
@@ -118,6 +124,7 @@ namespace SharpPdb.Windows
                 throw new Exception("Not whole directory stream was read");
 
             dbiStreamCache = SimpleCache.CreateStruct(() => new DbiStream(streams[(uint)SpecialStream.StreamDBI]));
+            infoStreamCache = SimpleCache.CreateStruct(() => new InfoStream(streams[(uint)SpecialStream.StreamPDB]));
             pdbSymbolStreamCache = SimpleCache.CreateStruct(() => new SymbolStream(streams[DbiStream.SymbolRecordStreamIndex]));
             tpiStreamCache = SimpleCache.CreateStruct(() => new TpiStream(streams[(uint)SpecialStream.StreamTPI]));
             ipiStreamCache = SimpleCache.CreateStruct(() => new TpiStream(streams[(uint)SpecialStream.StreamIPI]));
@@ -142,6 +149,11 @@ namespace SharpPdb.Windows
         /// Gets parsed DBI stream.
         /// </summary>
         public DbiStream DbiStream => dbiStreamCache.Value;
+
+        /// <summary>
+        /// Gets parsed PDB info stream.
+        /// </summary>
+        public InfoStream InfoStream => infoStreamCache.Value;
 
         /// <summary>
         /// Gets parsed symbol stream.

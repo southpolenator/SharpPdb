@@ -14,6 +14,21 @@ namespace SharpPdb.Windows.DBI
         private SimpleCacheStruct<string[]> filesCache;
 
         /// <summary>
+        /// Cache of module stream.
+        /// </summary>
+        private SimpleCacheStruct<PdbStream> moduleStreamCache;
+
+        /// <summary>
+        /// Cache of local symbol debug info stream.
+        /// </summary>
+        private SimpleCacheStruct<SymbolStream> localSymbolStreamCache;
+
+        /// <summary>
+        /// Cache of debug subsection stream.
+        /// </summary>
+        private SimpleCacheStruct<DebugSubsectionStream> debugSubsectionStreamCache;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DbiModuleDescriptor"/> class.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
@@ -36,6 +51,26 @@ namespace SharpPdb.Windows.DBI
             // Descriptors should be aligned at 4 bytes
             if (reader.Position % 4 != 0)
                 reader.Position += 4 - reader.Position % 4;
+
+            // Higher level API initialization
+            moduleStreamCache = SimpleCache.CreateStruct(() => ModuleStreamIndex > 0 ? moduleList.DbiStream.Stream.File.Streams[ModuleStreamIndex] : null);
+            localSymbolStreamCache = SimpleCache.CreateStruct(() =>
+            {
+                IBinaryReader sreader = ModuleStream.Reader.Duplicate();
+                sreader.Position = 0;
+                int signature = sreader.ReadInt();
+
+                if (signature != 4)
+                    throw new System.Exception("Invalid signature of module stream");
+                return new SymbolStream(sreader, SymbolDebugInfoByteSize);
+            });
+            debugSubsectionStreamCache = SimpleCache.CreateStruct(() =>
+            {
+                IBinaryReader sreader = ModuleStream.Reader.Duplicate();
+                sreader.Position = SymbolDebugInfoByteSize + C11LineInfoByteSize;
+
+                return new DebugSubsectionStream(sreader.ReadSubstream(C13LineInfoByteSize));
+            });
         }
 
         /// <summary>
@@ -69,6 +104,21 @@ namespace SharpPdb.Windows.DBI
         /// Gets all files compiled into this module.
         /// </summary>
         public string[] Files => filesCache.Value;
+
+        /// <summary>
+        /// Gets the module stream.
+        /// </summary>
+        public PdbStream ModuleStream => moduleStreamCache.Value;
+
+        /// <summary>
+        /// Gets the local symbol debug info stream.
+        /// </summary>
+        public SymbolStream LocalsSymbolStream => localSymbolStreamCache.Value;
+
+        /// <summary>
+        /// Gets the debug subsection stream.
+        /// </summary>
+        public DebugSubsectionStream DebugSubsectionStream => debugSubsectionStreamCache.Value;
 
         #region Header data
         /// <summary>

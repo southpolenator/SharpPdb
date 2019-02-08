@@ -1,5 +1,6 @@
 ﻿using SharpPdb.Windows.Utility;
 using SharpUtilities;
+using System.Collections.Generic;
 
 namespace SharpPdb.Windows
 {
@@ -12,6 +13,11 @@ namespace SharpPdb.Windows
         /// Cache of read strings for <see cref="StringsStream"/> specified offset.
         /// </summary>
         private DictionaryCache<uint, string> stringsCache;
+
+        /// <summary>
+        /// Cache of all strings in the strings table.
+        /// </summary>
+        private SimpleCacheStruct<Dictionary<uint, string>> dictionaryCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PdbStringTable"/> class.
@@ -39,6 +45,15 @@ namespace SharpPdb.Windows
 
             // Read epilogue
             StringsCount = reader.ReadInt();
+
+            dictionaryCache = SimpleCache.CreateStruct(() =>
+            {
+                Dictionary<uint, string> strings = new Dictionary<uint, string>();
+
+                foreach (uint offset in Offsets)
+                    strings[offset] = stringsCache[offset];
+                return strings;
+            });
         }
 
         /// <summary>
@@ -70,6 +85,11 @@ namespace SharpPdb.Windows
         /// Offsets of strings in <see cref="StringsStream"/>.
         /// </summary>
         public uint[] Offsets { get; private set; }
+
+        /// <summary>
+        /// Gets all strings in the strings table.
+        /// </summary>
+        public Dictionary<uint, string> Dictionary => dictionaryCache.Value;
 
         /// <summary>
         /// Returns string at the specified index.

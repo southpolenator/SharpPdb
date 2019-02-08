@@ -26,8 +26,10 @@ namespace SharpPdb.Windows.DBI
         /// </summary>
         /// <param name="moduleInfoStream">Module info stream binary reader.</param>
         /// <param name="fileInfoStream">File info stream binary reader.</param>
-        public DbiModuleList(IBinaryReader moduleInfoStream, IBinaryReader fileInfoStream)
+        /// <param name="dbiStream">Owning DBI stream.</param>
+        public DbiModuleList(IBinaryReader moduleInfoStream, IBinaryReader fileInfoStream, DbiStream dbiStream)
         {
+            DbiStream = dbiStream;
             ModuleInfoStream = moduleInfoStream;
             modulesCache = SimpleCache.CreateStruct(() =>
             {
@@ -112,6 +114,11 @@ namespace SharpPdb.Windows.DBI
         /// Gets file info stream binary reader.
         /// </summary>
         public IBinaryReader FileInfoStream { get; private set; }
+
+        /// <summary>
+        /// Gets the owning DBI stream.
+        /// </summary>
+        public DbiStream DbiStream { get; private set; }
 
         /// <summary>
         /// Gets the list of modules.

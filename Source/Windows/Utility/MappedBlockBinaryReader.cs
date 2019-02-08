@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace SharpPdb.Windows.Utility
@@ -233,7 +234,7 @@ namespace SharpPdb.Windows.Utility
         {
             long basePosition = BaseReader.Position;
             string value = BaseReader.ReadCString();
-            uint size = (uint)value.Length + 1;
+            uint size = (uint)(BaseReader.Position - basePosition);
 
             if (size <= blockRemaining)
             {
@@ -272,6 +273,57 @@ namespace SharpPdb.Windows.Utility
                 b = ReadByte();
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Reads C-style wide (2 bytes) string (null terminated) from the stream.
+        /// </summary>
+        public string ReadCStringWide()
+        {
+            long basePosition = BaseReader.Position;
+            string value = BaseReader.ReadCStringWide();
+            uint size = (uint)(BaseReader.Position - basePosition);
+
+            if (size <= blockRemaining)
+            {
+                blockRemaining -= size;
+                position += size;
+                CheckMoveReader();
+                return value;
+            }
+
+            // Check if we are reading from two consecutive blocks
+            if (size < BlockSize * 2 && blockIndex + 1 < Blocks.Length && Blocks[blockIndex] + 1 == Blocks[blockIndex + 1])
+            {
+                uint secondBlockRead = size - blockRemaining;
+
+                position += size;
+
+                // Seek for next block
+                blockIndex++;
+                if (blockIndex + 1 == Blocks.Length)
+                    blockRemaining = (uint)(Length - position);
+                else
+                    blockRemaining = BlockSize;
+                blockRemaining -= secondBlockRead;
+                return value;
+            }
+
+            // Rewind and fallback to slow reader (byte per byte)
+            BaseReader.Position = basePosition;
+
+            List<byte> bytes = new List<byte>();
+            byte b1 = ReadByte();
+            byte b2 = ReadByte();
+
+            while (b1 != 0 || b2 != 0)
+            {
+                bytes.Add(b1);
+                bytes.Add(b2);
+                b1 = ReadByte();
+                b2 = ReadByte();
+            }
+            return Encoding.Unicode.GetString(bytes.ToArray());
         }
 
         /// <summary>
