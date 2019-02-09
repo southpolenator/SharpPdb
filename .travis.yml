@@ -6,4 +6,5 @@ dotnet: 2.2
 script:
   - dotnet build
   - dotnet pack
-  - echo dotnet test
+  - cd pdbs;./download.sh;cd ../
+  - dotnet test

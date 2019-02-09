@@ -6,7 +6,7 @@ namespace SharpPdb.Windows.Tests
 {
     public class TestBase
     {
-        public const string DefaultPdbsPath = @"..\..\..\pdbs\";
+        public static readonly string DefaultPdbsPath = Path.Combine("..", "..", "..", "pdbs");
 
         public static Assembly GetTestsAssembly()
         {
