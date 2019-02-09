@@ -6,5 +6,5 @@ dotnet: 2.2
 script:
   - dotnet build
   - dotnet pack
-  - cd pdbs;./download.sh;cd ../
+  - cd pdbs;bash ./download.sh;cd ../
   - dotnet test
