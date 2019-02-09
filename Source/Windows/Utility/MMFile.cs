@@ -37,9 +37,9 @@ namespace SharpPdb.Windows.Utility
         {
             try
             {
-                fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 Length = fileStream.Length;
-                memoryMappedFile = MemoryMappedFile.CreateFromFile(fileStream, Guid.NewGuid().ToString(), Length, MemoryMappedFileAccess.Read, HandleInheritability.Inheritable, false);
+                memoryMappedFile = MemoryMappedFile.CreateFromFile(fileStream, null, Length, MemoryMappedFileAccess.Read, HandleInheritability.Inheritable, false);
                 stream = memoryMappedFile.CreateViewStream(0, Length, MemoryMappedFileAccess.Read);
                 stream.SafeMemoryMappedViewHandle.AcquirePointer(ref basePointer);
             }
