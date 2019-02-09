@@ -1,6 +1,8 @@
 version: 1.0.{build}
 image: Visual Studio 2017
 configuration: Release
+environment:
+  PROJECT_ROOT: C:\projects\sharppdb
 install:
   - ps: (new-object Net.WebClient).DownloadString("https://raw.github.com/madskristensen/ExtensionScripts/master/AppVeyor/vsix.ps1") | iex
 before_build:
