@@ -29,11 +29,15 @@ namespace SharpPdb.Windows.SymbolRecords
         /// Reads <see cref="UdtSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
+        /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
+        /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static UdtSymbol Read(IBinaryReader reader, SymbolRecordKind kind)
+        public static UdtSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
             return new UdtSymbol
             {
+                SymbolStream = symbolStream,
+                SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
                 Type = TypeIndex.Read(reader),
                 Name = reader.ReadCString(),

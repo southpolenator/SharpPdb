@@ -12,12 +12,12 @@ namespace SharpPdb.Windows.PIS
         /// <summary>
         /// Cache for <see cref="Streams"/>.
         /// </summary>
-        private SimpleCacheStruct<Dictionary<string, uint>> streamsCache;
+        private SimpleCacheStruct<Dictionary<string, int>> streamsCache;
 
         /// <summary>
         /// Cache for <see cref="StreamsUppercase"/>.
         /// </summary>
-        private SimpleCacheStruct<Dictionary<string, uint>> streamsUppercaseCache;
+        private SimpleCacheStruct<Dictionary<string, int>> streamsUppercaseCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedStreamMap"/> class.
@@ -30,19 +30,19 @@ namespace SharpPdb.Windows.PIS
             HashTable = new HashTable(reader);
             streamsCache = SimpleCache.CreateStruct(() =>
             {
-                Dictionary<string, uint> streams = new Dictionary<string, uint>();
+                Dictionary<string, int> streams = new Dictionary<string, int>();
                 IBinaryReader stringsReader = StringsStream.Duplicate();
 
                 foreach (var kvp in HashTable.Dictionary)
                 {
                     stringsReader.Position = kvp.Key;
-                    streams.Add(stringsReader.ReadCString(), kvp.Value);
+                    streams.Add(stringsReader.ReadCString(), (int)kvp.Value);
                 }
                 return streams;
             });
             streamsUppercaseCache = SimpleCache.CreateStruct(() =>
             {
-                Dictionary<string, uint> streams = new Dictionary<string, uint>();
+                Dictionary<string, int> streams = new Dictionary<string, int>();
 
                 foreach (var kvp in Streams)
                     streams.Add(kvp.Key.ToUpperInvariant(), kvp.Value);
@@ -63,11 +63,11 @@ namespace SharpPdb.Windows.PIS
         /// <summary>
         /// Gets the dictionary of streams given by name and its id.
         /// </summary>
-        public Dictionary<string, uint> Streams => streamsCache.Value;
+        public Dictionary<string, int> Streams => streamsCache.Value;
 
         /// <summary>
         /// Gets the dictionary of streams given by uppercase name and its id.
         /// </summary>
-        public Dictionary<string, uint> StreamsUppercase => streamsUppercaseCache.Value;
+        public Dictionary<string, int> StreamsUppercase => streamsUppercaseCache.Value;
     }
 }

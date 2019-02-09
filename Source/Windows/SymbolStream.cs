@@ -12,30 +12,19 @@ namespace SharpPdb.Windows
     public class SymbolStream
     {
         /// <summary>
-        /// Internal symbol reference structure.
-        /// </summary>
-        public struct SymbolReference
-        {
-            /// <summary>
-            /// Offset of the symbol record data in the stream.
-            /// </summary>
-            public uint DataOffset;
-
-            /// <summary>
-            /// Symbol record data length in bytes.
-            /// </summary>
-            public ushort DataLen;
-
-            /// <summary>
-            /// Symbol record kind.
-            /// </summary>
-            public SymbolRecordKind Kind;
-        }
-
-        /// <summary>
         /// List of all symbol references in this stream.
         /// </summary>
-        private List<SymbolReference> references;
+        private List<SymbolRecordReference> references = new List<SymbolRecordReference>();
+
+        /// <summary>
+        /// Dictionary of reference indexes by position in the binary reader.
+        /// </summary>
+        private Dictionary<long, int> referenceIndexByOffset = new Dictionary<long, int>();
+
+        /// <summary>
+        /// Array cache of symbols in this symbol stream.
+        /// </summary>
+        private ArrayCache<SymbolRecord> symbols;
 
         /// <summary>
         /// Dictionary cache of symbols by its kind.
@@ -60,7 +49,6 @@ namespace SharpPdb.Windows
         public SymbolStream(IBinaryReader reader, long end = -1)
         {
             Reader = reader;
-            references = new List<SymbolReference>();
 
             long position = reader.Position;
             if (end < 0 || end > reader.Length)
@@ -76,7 +64,8 @@ namespace SharpPdb.Windows
                 SymbolRecordKind kind = (SymbolRecordKind)prefix.RecordKind;
                 ushort dataLen = prefix.DataLen;
 
-                references.Add(new SymbolReference
+                referenceIndexByOffset.Add(position, references.Count);
+                references.Add(new SymbolRecordReference
                 {
                     DataOffset = (uint)position + RecordPrefix.Size,
                     Kind = kind,
@@ -87,6 +76,7 @@ namespace SharpPdb.Windows
             }
 
             symbolsByKind = new DictionaryCache<SymbolRecordKind, SymbolRecord[]>(GetSymbolsByKind);
+            symbols = new ArrayCache<SymbolRecord>(references.Count, GetSymbol);
         }
 
         /// <summary>
@@ -102,7 +92,14 @@ namespace SharpPdb.Windows
         /// <summary>
         /// Gets the read-only list of all symbol references in this stream.
         /// </summary>
-        public IReadOnlyList<SymbolReference> References => references;
+        public IReadOnlyList<SymbolRecordReference> References => references;
+
+        /// <summary>
+        /// Indexing operator for getting symbol record at the given index.
+        /// </summary>
+        /// <param name="index">Index of the symbol record.</param>
+        /// <returns>Symbol record at the given index position.</returns>
+        public SymbolRecord this[int index] => symbols[index];
 
         /// <summary>
         /// Indexing operator for getting all symbols of the given kind.
@@ -110,6 +107,18 @@ namespace SharpPdb.Windows
         /// <param name="kind">Symbol record kind that should be parsed from this symbol stream.</param>
         /// <returns>Array of symbol record for the specified symbol record kind.</returns>
         public SymbolRecord[] this[SymbolRecordKind kind] => symbolsByKind[kind];
+
+        /// <summary>
+        /// Gets symbol record by offset in the binary reder stream.
+        /// </summary>
+        /// <param name="position">Position in the binary reader.</param>
+        /// <returns>Symbol record at the specified position.</returns>
+        public SymbolRecord GetSymbolRecordByOffset(long position)
+        {
+            int index = referenceIndexByOffset[position];
+
+            return symbols[index];
+        }
 
         /// <summary>
         /// Parses all symbols of the specified symbol record kind.
@@ -122,7 +131,7 @@ namespace SharpPdb.Windows
 
             for (int i = 0; i < references.Count; i++)
                 if (references[i].Kind == kind)
-                    symbols.Add(GetSymbol(i));
+                    symbols.Add(this.symbols[i]);
             return symbols.ToArray();
         }
 
@@ -133,7 +142,7 @@ namespace SharpPdb.Windows
         private SymbolRecord GetSymbol(int index)
         {
             // Since DictionaryCache is allowing only single thread to call this function, we don't need to lock reader here.
-            SymbolReference reference = references[index];
+            SymbolRecordReference reference = references[index];
 
             Reader.Position = reference.DataOffset;
             switch (reference.Kind)
@@ -144,39 +153,39 @@ namespace SharpPdb.Windows
                 case SymbolRecordKind.S_LPROC32_ID:
                 case SymbolRecordKind.S_LPROC32_DPC:
                 case SymbolRecordKind.S_LPROC32_DPC_ID:
-                    return ProcedureSymbol.Read(Reader, reference.Kind);
+                    return ProcedureSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_PUB32:
-                    return Public32Symbol.Read(Reader, reference.Kind);
+                    return Public32Symbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_CONSTANT:
                 case SymbolRecordKind.S_MANCONSTANT:
-                    return ConstantSymbol.Read(Reader, reference.Kind);
+                    return ConstantSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_LDATA32:
                 case SymbolRecordKind.S_GDATA32:
                 case SymbolRecordKind.S_LMANDATA:
                 case SymbolRecordKind.S_GMANDATA:
-                    return DataSymbol.Read(Reader, reference.Kind);
+                    return DataSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_PROCREF:
                 case SymbolRecordKind.S_LPROCREF:
-                    return ProcedureReferenceSymbol.Read(Reader, reference.Kind);
+                    return ProcedureReferenceSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_UDT:
                 case SymbolRecordKind.S_COBOLUDT:
-                    return UdtSymbol.Read(Reader, reference.Kind);
+                    return UdtSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_LTHREAD32:
                 case SymbolRecordKind.S_GTHREAD32:
-                    return ThreadLocalDataSymbol.Read(Reader, reference.Kind);
+                    return ThreadLocalDataSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_GMANPROC:
                 case SymbolRecordKind.S_LMANPROC:
-                    return ManagedProcedureSymbol.Read(Reader, reference.Kind);
+                    return ManagedProcedureSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_BLOCK32:
-                    return BlockSymbol.Read(Reader, reference.Kind);
+                    return BlockSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_OEM:
-                    return OemSymbol.Read(Reader, reference.Kind, reference.DataLen);
+                    return OemSymbol.Read(Reader, this, index, reference.Kind, reference.DataLen);
                 case SymbolRecordKind.S_UNAMESPACE:
-                    return NamespaceSymbol.Read(Reader, reference.Kind);
+                    return NamespaceSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_MANSLOT:
-                    return AttributeSlotSymbol.Read(Reader, reference.Kind);
+                    return AttributeSlotSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_END:
-                    return EndSymbol.Read(Reader, reference.Kind);
+                    return EndSymbol.Read(Reader, this, index, reference.Kind);
                 default:
                     throw new NotImplementedException();
             }

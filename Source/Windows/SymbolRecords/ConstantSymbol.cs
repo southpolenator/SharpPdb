@@ -35,11 +35,15 @@ namespace SharpPdb.Windows.SymbolRecords
         /// Reads <see cref="ConstantSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
+        /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
+        /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static ConstantSymbol Read(IBinaryReader reader, SymbolRecordKind kind)
+        public static ConstantSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
             return new ConstantSymbol
             {
+                SymbolStream = symbolStream,
+                SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
                 TypeIndex = TypeIndex.Read(reader),
                 Value = reader.ReadEncodedInteger(),

@@ -28,6 +28,16 @@ namespace SharpPdb.Windows.Utility
         }
 
         /// <summary>
+        /// Reads all bytes from the stream.
+        /// </summary>
+        /// <param name="reader">Binary reader.</param>
+        public static byte[] ReadAllBytes(this IBinaryReader reader)
+        {
+            reader.Position = 0;
+            return ReadByteArray(reader, (int)reader.Length);
+        }
+
+        /// <summary>
         /// Reads <c>byte[]</c> from the stream.
         /// </summary>
         /// <param name="reader">Binary reader.</param>

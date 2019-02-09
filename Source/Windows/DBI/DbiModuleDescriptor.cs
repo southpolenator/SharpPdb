@@ -113,7 +113,7 @@ namespace SharpPdb.Windows.DBI
         /// <summary>
         /// Gets the local symbol debug info stream.
         /// </summary>
-        public SymbolStream LocalsSymbolStream => localSymbolStreamCache.Value;
+        public SymbolStream LocalSymbolStream => localSymbolStreamCache.Value;
 
         /// <summary>
         /// Gets the debug subsection stream.

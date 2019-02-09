@@ -35,13 +35,17 @@ namespace SharpPdb.Windows.SymbolRecords
         /// Reads <see cref="OemSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
+        /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
+        /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
         /// <param name="dataLength">Record data length.</param>
-        public static OemSymbol Read(IBinaryReader reader, SymbolRecordKind kind, uint dataLength)
+        public static OemSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind, uint dataLength)
         {
             long positionEnd = reader.Position + dataLength;
             OemSymbol symbol = new OemSymbol
             {
+                SymbolStream = symbolStream,
+                SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
                 Id = reader.ReadGuid(),
                 TypeIndex = TypeIndex.Read(reader),

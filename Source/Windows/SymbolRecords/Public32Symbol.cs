@@ -39,11 +39,15 @@ namespace SharpPdb.Windows.SymbolRecords
         /// Reads <see cref="Public32Symbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
+        /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
+        /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static Public32Symbol Read(IBinaryReader reader, SymbolRecordKind kind)
+        public static Public32Symbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
             return new Public32Symbol
             {
+                SymbolStream = symbolStream,
+                SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
                 Flags = (PublicSymbolFlags)reader.ReadUint(),
                 Offset = reader.ReadUint(),
