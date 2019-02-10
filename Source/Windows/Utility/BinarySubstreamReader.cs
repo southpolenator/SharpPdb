@@ -8,7 +8,7 @@
         where TStream : IBinaryReader
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MMFileReader"/> class.
+        /// Initializes a new instance of the <see cref="BinarySubstreamReader"/> class.
         /// </summary>
         /// <param name="parentStream">Parent stream binary reader.</param>
         /// <param name="parentOffset">Position in the parent stream that is the beginning of this stream.</param>

@@ -106,7 +106,7 @@ namespace SharpPdb.Windows.Utility
             long unaligned = reader.Position % alignment;
 
             if (unaligned != 0)
-                reader.Position += alignment - unaligned;
+                reader.ReadFake((uint)(alignment - unaligned));
         }
 
         /// <summary>

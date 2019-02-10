@@ -1,11 +1,12 @@
-﻿using System.Text;
+﻿using SharpUtilities;
+using System.Text;
 
 namespace SharpPdb.Windows.Utility
 {
     /// <summary>
-    /// Class that implements <see cref="IBinaryReader"/> for <see cref="MMFile"/> as stream.
+    /// Class that implements <see cref="IBinaryReader"/> for <see cref="MemoryLoadedFile"/> as stream.
     /// </summary>
-    internal unsafe class MMFileReader : IBinaryReader
+    internal unsafe class MemoryLoadedFileReader : IBinaryReader
     {
         /// <summary>
         /// Current position in the memory file.
@@ -13,19 +14,19 @@ namespace SharpPdb.Windows.Utility
         private byte* pointer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MMFileReader"/> class.
+        /// Initializes a new instance of the <see cref="MemoryLoadedFileReader"/> class.
         /// </summary>
-        /// <param name="file">The <see cref="MMFile"/> as stream.</param>
-        public MMFileReader(MMFile file)
+        /// <param name="file">The <see cref="MemoryLoadedFile"/> as stream.</param>
+        public MemoryLoadedFileReader(MemoryLoadedFile file)
         {
             File = file;
             Position = 0;
         }
 
         /// <summary>
-        /// Gets the <see cref="MMFile"/>.
+        /// Gets the <see cref="MemoryLoadedFile"/>.
         /// </summary>
-        public MMFile File { get; private set; }
+        public MemoryLoadedFile File { get; private set; }
 
         /// <summary>
         /// Gets or sets the position in the stream.
@@ -51,7 +52,7 @@ namespace SharpPdb.Windows.Utility
         /// </summary>
         public IBinaryReader Duplicate()
         {
-            return new MMFileReader(File)
+            return new MemoryLoadedFileReader(File)
             {
                 Position = Position,
             };

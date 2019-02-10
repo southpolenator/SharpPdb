@@ -18,7 +18,7 @@ namespace SharpPdb.Windows
             Blocks = blocks;
             Length = length;
             File = file;
-            Reader = new MappedBlockBinaryReader<MMFileReader>(blocks, file.SuperBlock.BlockSize, length, file.Reader);
+            Reader = new MappedBlockBinaryReader<MemoryLoadedFileReader>(blocks, file.SuperBlock.BlockSize, length, file.Reader);
         }
 
         /// <summary>

@@ -53,8 +53,8 @@ namespace SharpPdb.Windows
         /// <param name="path">Path to PDB file.</param>
         public PdbFile(string path)
         {
-            File = new MMFile(path);
-            Reader = new MMFileReader(File);
+            File = new MemoryLoadedFile(path);
+            Reader = new MemoryLoadedFileReader(File);
 
             // Parse file headers
 
@@ -89,7 +89,7 @@ namespace SharpPdb.Windows
                 currentFpmBlock += SuperBlock.BlockSize;
             }
 
-            IBinaryReader fpmStream = new MappedBlockBinaryReader<MMFileReader>(fpmBlocks, SuperBlock.BlockSize, (SuperBlock.NumBlocks + 7) / 8, Reader);
+            IBinaryReader fpmStream = new MappedBlockBinaryReader<MemoryLoadedFileReader>(fpmBlocks, SuperBlock.BlockSize, (SuperBlock.NumBlocks + 7) / 8, Reader);
             FreePageMap = Reader.ReadByteArray((int)fpmStream.Length);
 
             // Read directory blocks
@@ -178,12 +178,12 @@ namespace SharpPdb.Windows
         /// <summary>
         /// Gets the memory mapped file associated with this PDB file.
         /// </summary>
-        internal MMFile File { get; private set; }
+        internal MemoryLoadedFile File { get; private set; }
 
         /// <summary>
         /// Gets the file reader.
         /// </summary>
-        internal MMFileReader Reader { get; private set; }
+        internal MemoryLoadedFileReader Reader { get; private set; }
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
