@@ -46,7 +46,7 @@ namespace SharpPdb.Windows.SymbolRecords
                 SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
                 TypeIndex = TypeIndex.Read(reader),
-                Value = reader.ReadEncodedInteger(),
+                Value = reader.ReadEncodedConstant(),
                 Name = reader.ReadCString(),
             };
         }

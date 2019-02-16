@@ -48,7 +48,7 @@ namespace SharpPdb.Windows.TypeRecords
                 Kind = kind,
                 Attributes = MemberAttributes.Read(reader),
                 Type = TypeIndex.Read(reader),
-                FieldOffset = Convert.ToUInt64(reader.ReadEncodedInteger()),
+                FieldOffset = Convert.ToUInt64(reader.ReadEncodedConstant()),
                 Name = reader.ReadCString(),
             };
         }

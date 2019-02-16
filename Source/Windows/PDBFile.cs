@@ -53,7 +53,30 @@ namespace SharpPdb.Windows
         /// <param name="path">Path to PDB file.</param>
         public PdbFile(string path)
         {
-            File = new MemoryLoadedFile(path);
+            MemoryLoadedFile file = new MemoryLoadedFile(path);
+            try
+            {
+                Initialize(file);
+            }
+            catch
+            {
+                file.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PdbFile"/> class.
+        /// </summary>
+        /// <param name="file">File loaded into memory.</param>
+        public PdbFile(MemoryLoadedFile file)
+        {
+            Initialize(file);
+        }
+
+        private void Initialize(MemoryLoadedFile file)
+        {
+            File = file;
             Reader = new MemoryLoadedFileReader(File);
 
             // Parse file headers

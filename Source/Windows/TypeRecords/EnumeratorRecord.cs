@@ -41,7 +41,7 @@ namespace SharpPdb.Windows.TypeRecords
             {
                 Kind = kind,
                 Attritubes = MemberAttributes.Read(reader),
-                Value = reader.ReadEncodedInteger(),
+                Value = reader.ReadEncodedConstant(),
                 Name = reader.ReadCString(),
             };
         }

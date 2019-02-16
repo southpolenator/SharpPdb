@@ -1,5 +1,6 @@
 ﻿using SharpPdb.Windows.TypeRecords;
 using System;
+using System.Text;
 
 namespace SharpPdb.Windows.Utility
 {
@@ -110,11 +111,59 @@ namespace SharpPdb.Windows.Utility
         }
 
         /// <summary>
-        /// Reads encoded integer from the stream.
+        /// Reads 32-bit floating point number from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
-        /// <returns>Integer, but also carries type info, so it is returned as object.</returns>
-        public static object ReadEncodedInteger(this IBinaryReader reader)
+        public static unsafe float ReadFloat(this IBinaryReader reader)
+        {
+            uint data = reader.ReadUint();
+
+            return *((float*)&data);
+        }
+
+        /// <summary>
+        /// Reads 64-bit floating point number from the stream.
+        /// </summary>
+        /// <param name="reader">Stream binary reader.</param>
+        public static unsafe double ReadDouble(this IBinaryReader reader)
+        {
+            ulong data = reader.ReadUlong();
+
+            return *((double*)&data);
+        }
+
+        /// <summary>
+        /// Reads length prefixed UTF8 string from the stream.
+        /// </summary>
+        /// <param name="reader">Stream binary reader.</param>
+        public static string ReadBString(this IBinaryReader reader)
+        {
+            ushort length = reader.ReadUshort();
+            byte[] bytes = reader.ReadByteArray(length);
+
+            return Encoding.UTF8.GetString(bytes);
+        }
+
+        /// <summary>
+        /// Reads decimal number from the stream.
+        /// </summary>
+        /// <param name="reader">Stream binary reader.</param>
+        public static decimal ReadDecimal(this IBinaryReader reader)
+        {
+            int bits0 = reader.ReadInt();
+            int bits1 = reader.ReadInt();
+            int bits2 = reader.ReadInt();
+            int bits3 = reader.ReadInt();
+
+            return new decimal(bits2, bits3, bits1, bits0 < 0, (byte)((bits0 & 0x00FF0000) >> 16));
+        }
+
+        /// <summary>
+        /// Reads encoded constant from the stream.
+        /// </summary>
+        /// <param name="reader">Stream binary reader.</param>
+        /// <returns>Mostly integer, but also carries type info, so it is returned as object.</returns>
+        public static object ReadEncodedConstant(this IBinaryReader reader)
         {
             ushort type = reader.ReadUshort();
 
@@ -137,6 +186,16 @@ namespace SharpPdb.Windows.Utility
                     return reader.ReadLong();
                 case TypeLeafKind.LF_UQUADWORD:
                     return reader.ReadUlong();
+                case TypeLeafKind.LF_REAL32:
+                    return reader.ReadFloat();
+                case TypeLeafKind.LF_REAL64:
+                    return reader.ReadDouble();
+                case TypeLeafKind.LF_VARSTRING:
+                    return reader.ReadBString();
+                case TypeLeafKind.LF_DECIMAL:
+                    return reader.ReadDecimal();
+                case TypeLeafKind.LF_DATE:
+                    return new DateTime(reader.ReadLong());
             }
 
             throw new NotImplementedException();

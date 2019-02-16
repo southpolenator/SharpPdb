@@ -34,7 +34,7 @@ namespace SharpPdb.Windows.TypeRecords
                 MemberCount = reader.ReadUshort(),
                 Options = (ClassOptions)reader.ReadUshort(),
                 FieldList = TypeIndex.Read(reader),
-                Size = Convert.ToUInt64(reader.ReadEncodedInteger()),
+                Size = Convert.ToUInt64(reader.ReadEncodedConstant()),
                 Name = reader.ReadCString(),
             };
 

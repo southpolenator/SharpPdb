@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\SharedAssemblyInfo.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Nuget properties -->
+    <Description>Higher level interface abstraction between Portable PDB and Windows PDB.</Description>
+    <Summary>Higher level interface abstraction between Portable PDB and Windows PDB.</Summary>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpUtilities" Version="1.2.0" />
+    <PackageReference Include="System.Reflection.Metadata" Version="1.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(EnlistmentRoot)Source\Windows\SharpPdb.Windows.csproj" />
+  </ItemGroup>
+
+</Project>

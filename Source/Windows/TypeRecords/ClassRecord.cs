@@ -51,7 +51,7 @@ namespace SharpPdb.Windows.TypeRecords
                 FieldList = TypeIndex.Read(reader),
                 DerivationList = TypeIndex.Read(reader),
                 VirtualTableShape = TypeIndex.Read(reader),
-                Size = Convert.ToUInt64(reader.ReadEncodedInteger()),
+                Size = Convert.ToUInt64(reader.ReadEncodedConstant()),
                 Name = reader.ReadCString(),
             };
 

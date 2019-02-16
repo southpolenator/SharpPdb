@@ -62,8 +62,8 @@ namespace SharpPdb.Windows.TypeRecords
                 Attributes = MemberAttributes.Read(reader),
                 BaseType = TypeIndex.Read(reader),
                 VirtualBasePointerType = TypeIndex.Read(reader),
-                VirtualBasePointerOffset = Convert.ToUInt64(reader.ReadEncodedInteger()),
-                VirtualTableIndex = Convert.ToUInt64(reader.ReadEncodedInteger()),
+                VirtualBasePointerOffset = Convert.ToUInt64(reader.ReadEncodedConstant()),
+                VirtualTableIndex = Convert.ToUInt64(reader.ReadEncodedConstant()),
             };
         }
     }
