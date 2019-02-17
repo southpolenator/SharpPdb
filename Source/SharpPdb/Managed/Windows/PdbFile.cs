@@ -1,4 +1,5 @@
 ﻿using SharpPdb.Windows;
+using SharpPdb.Windows.DBI;
 using SharpPdb.Windows.DebugSubsections;
 using SharpPdb.Windows.SymbolRecords;
 using SharpUtilities;
@@ -39,6 +40,11 @@ namespace SharpPdb.Managed.Windows
         private SimpleCacheStruct<Dictionary<int, IPdbFunction>> functionsByTokenCache;
 
         /// <summary>
+        /// Cache for <see cref="TokenRidMap"/> property.
+        /// </summary>
+        private SimpleCacheStruct<uint[]> tokenRidMapCache;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PdbFile"/> class.
         /// </summary>
         /// <param name="file">File loaded into memory for faster parsing.</param>
@@ -65,6 +71,21 @@ namespace SharpPdb.Managed.Windows
             });
             sourcesCache = new DictionaryCache<FileChecksumSubsection, PdbSource>(checksum => new PdbSource(this, checksum));
             functionsByTokenCache = SimpleCache.CreateStruct(() => Functions.ToDictionary(f => f.Token));
+            tokenRidMapCache = SimpleCache.CreateStruct(() =>
+            {
+                uint streamId = Reader.DbiStream.DebugStreamIndexes[(int)KnownDebugStreamIndex.TokenRidMap];
+
+                if (streamId == 0 || streamId == DbiStream.InvalidStreamIndex || streamId >= Reader.Streams.Count)
+                    return null;
+
+                var reader = Reader.Streams[(int)streamId].Reader;
+                int count = (int)(reader.Length / 4); // 4 = sizeof(uint)
+                uint[] tokenRidMap = new uint[count];
+
+                for (int i = 0; i < count; i++)
+                    tokenRidMap[i] = reader.ReadUint();
+                return tokenRidMap;
+            });
             this.file = file;
         }
 
@@ -87,6 +108,11 @@ namespace SharpPdb.Managed.Windows
         /// Dictionary of available functions indexed by its token.
         /// </summary>
         internal Dictionary<int, IPdbFunction> FunctionsByToken => functionsByTokenCache.Value;
+
+        /// <summary>
+        /// Gets the token remapping table if exists.
+        /// </summary>
+        internal uint[] TokenRidMap => tokenRidMapCache.Value;
 
         /// <summary>
         /// Gets the PDB file identifier.

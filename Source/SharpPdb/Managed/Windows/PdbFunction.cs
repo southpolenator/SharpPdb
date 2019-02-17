@@ -86,7 +86,17 @@ namespace SharpPdb.Managed.Windows
         /// <summary>
         /// Gets the method token.
         /// </summary>
-        public int Token => (int)Procedure.FunctionType.Index;
+        public int Token
+        {
+            get
+            {
+                uint token = Procedure.FunctionType.Index;
+
+                if (PdbFile.TokenRidMap != null)
+                    token = 0x06000000 | PdbFile.TokenRidMap[token & 0xffffff];
+                return (int)token;
+            }
+        }
 
         /// <summary>
         /// Gets the list of local scopes in this function.
