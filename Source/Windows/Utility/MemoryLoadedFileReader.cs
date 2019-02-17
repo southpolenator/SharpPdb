@@ -146,7 +146,7 @@ namespace SharpPdb.Windows.Utility
             while (*end != 0)
                 end++;
             pointer = end + 1;
-            return new string((sbyte*)start, 0, (int)(end - start));
+            return Encoding.UTF8.GetString(start, (int)(end - start));
         }
 
         /// <summary>
