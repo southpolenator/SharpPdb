@@ -4,6 +4,7 @@ using SharpPdb.Windows.SymbolRecords;
 using SharpUtilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SharpPdb.Managed.Windows
 {
@@ -33,6 +34,11 @@ namespace SharpPdb.Managed.Windows
         private DictionaryCache<FileChecksumSubsection, PdbSource> sourcesCache;
 
         /// <summary>
+        /// Cache for <see cref="FunctionsByToken"/> property.
+        /// </summary>
+        private SimpleCacheStruct<Dictionary<int, IPdbFunction>> functionsByTokenCache;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PdbFile"/> class.
         /// </summary>
         /// <param name="file">File loaded into memory for faster parsing.</param>
@@ -58,6 +64,7 @@ namespace SharpPdb.Managed.Windows
                 return new PdbStringTable(Reader.Streams[Reader.InfoStream.NamedStreamMap.Streams["/names"]].Reader);
             });
             sourcesCache = new DictionaryCache<FileChecksumSubsection, PdbSource>(checksum => new PdbSource(this, checksum));
+            functionsByTokenCache = SimpleCache.CreateStruct(() => Functions.ToDictionary(f => f.Token));
             this.file = file;
         }
 
@@ -77,6 +84,11 @@ namespace SharpPdb.Managed.Windows
         public SharpPdb.Windows.PIS.InfoStreamHeader PdbId => Reader.InfoStream.Header;
 
         /// <summary>
+        /// Dictionary of available functions indexed by its token.
+        /// </summary>
+        internal Dictionary<int, IPdbFunction> FunctionsByToken => functionsByTokenCache.Value;
+
+        /// <summary>
         /// Gets the PDB file identifier.
         /// </summary>
         public Guid Guid => PdbId.Guid;
@@ -85,6 +97,11 @@ namespace SharpPdb.Managed.Windows
         /// Gets the PDB stamp.
         /// </summary>
         public uint Stamp => PdbId.Signature;
+
+        /// <summary>
+        /// Gets the PDB file age.
+        /// </summary>
+        public int Age => (int)PdbId.Age;
 
         /// <summary>
         /// Gets the list of functions described in this PDB file.
@@ -99,6 +116,19 @@ namespace SharpPdb.Managed.Windows
         public void Dispose()
         {
             file?.Dispose();
+        }
+
+        /// <summary>
+        /// Find function by the specified token.
+        /// </summary>
+        /// <param name="token">Method definition token.</param>
+        /// <returns><see cref="IPdbFunction"/> object if found, <c>null</c> otherwise.</returns>
+        public IPdbFunction GetFunctionFromToken(int token)
+        {
+            IPdbFunction function = null;
+
+            FunctionsByToken.TryGetValue(token, out function);
+            return function;
         }
     }
 }

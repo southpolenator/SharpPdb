@@ -26,6 +26,11 @@ namespace SharpPdb.Managed.Portable
         private SimpleCacheStruct<IPdbFunction[]> functionsCache;
 
         /// <summary>
+        /// Dictionary cache of functions by handle.
+        /// </summary>
+        private DictionaryCache<MethodDebugInformationHandle, PdbFunction> functionsByHandle;
+
+        /// <summary>
         /// Cache for source files accessed by indexing operator.
         /// </summary>
         private DictionaryCache<DocumentHandle, IPdbSource> sourcesCache;
@@ -48,10 +53,11 @@ namespace SharpPdb.Managed.Portable
                 int i = 0;
 
                 foreach (var f in Reader.MethodDebugInformation)
-                    functions[i++] = new PdbFunction(this, f);
+                    functions[i++] = functionsByHandle[f];
                 return functions;
             });
             sourcesCache = new DictionaryCache<DocumentHandle, IPdbSource>(GetSource);
+            functionsByHandle = new DictionaryCache<MethodDebugInformationHandle, PdbFunction>(f => new PdbFunction(this, f));
         }
 
         /// <summary>
@@ -75,6 +81,11 @@ namespace SharpPdb.Managed.Portable
         public uint Stamp => Id.Stamp;
 
         /// <summary>
+        /// Gets the PDB file age.
+        /// </summary>
+        public int Age => 1;
+
+        /// <summary>
         /// Gets the list of functions described in this PDB file.
         /// </summary>
         public IReadOnlyList<IPdbFunction> Functions => functionsCache.Value;
@@ -87,6 +98,35 @@ namespace SharpPdb.Managed.Portable
         public void Dispose()
         {
             file?.Dispose();
+        }
+
+        /// <summary>
+        /// Find function by the specified token.
+        /// </summary>
+        /// <param name="token">Method definition token.</param>
+        /// <returns><see cref="IPdbFunction"/> object if found, <c>null</c> otherwise.</returns>
+        public IPdbFunction GetFunctionFromToken(int token)
+        {
+            EntityHandle handle = System.Reflection.Metadata.Ecma335.MetadataTokens.EntityHandle(token);
+            int rowNumber = System.Reflection.Metadata.Ecma335.MetadataTokens.GetRowNumber(handle);
+            MethodDebugInformationHandle methodHandle = System.Reflection.Metadata.Ecma335.MetadataTokens.MethodDebugInformationHandle(rowNumber);
+
+            try
+            {
+                PdbFunction function = functionsByHandle[methodHandle];
+
+                if (function != null)
+                {
+                    // Verify that returned function is valid.
+                    var document = function.MethodDebugInformation.Document;
+                }
+                return function;
+            }
+            catch
+            {
+                functionsByHandle[methodHandle] = null;
+                return null;
+            }
         }
 
         /// <summary>
