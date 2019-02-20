@@ -1,16 +1,14 @@
 <Project>
   <PropertyGroup>
     <!-- Nuget properties -->
-    <AssemblyVersion>1.0</AssemblyVersion>
-    <FileVersion>1.0</FileVersion>
-    <VersionPrefix>1.0</VersionPrefix>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <FileVersion>1.0.1</FileVersion>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>SharpStar Team</Authors>
     <Copyright>Copyright (C) SharpStar team 2015-2019</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/southpolenator/SharpPdb</PackageProjectUrl>
     <!--<PackageIconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</PackageIconUrl>-->
-    <IncludeSymbols>True</IncludeSymbols>
-    <IncludeSource>True</IncludeSource>
     <RepositoryUrl>https://github.com/southpolenator/SharpPdb.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 
@@ -18,10 +16,32 @@
     <EnlistmentRoot>$(MSBuildThisFileDirectory)</EnlistmentRoot>
     <OutputPath>$(EnlistmentRoot)\bin\$(Configuration)\</OutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Enable embedding pdb -->
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+
+    <!-- Singing assemblies -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(EnlistmentRoot)\Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <!-- Nuget license file -->
   <ItemGroup>
     <None Include="$(EnlistmentRoot)LICENSE" Pack="true" PackagePath=""/>
   </ItemGroup>
+
+  <!-- Solving problem with non-Windows builds or not installed .net framework -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45' AND '$(MSBuildRuntimeType)' == 'Core' AND '$(OS)' != 'Windows_NT'">
+    <PackageReference Include="Microsoft.TargetingPack.NETFramework.v4.5" Version="1.0.1" ExcludeAssets="All" PrivateAssets="All" GeneratePathProperty="true" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net45' AND '$(MSBuildRuntimeType)' == 'Core' AND '$(OS)' != 'Windows_NT' AND '$(NuGetPackageRoot)' != ''">
+    <FrameworkPathOverride>$(NuGetPackageRoot)microsoft.targetingpack.netframework.v4.5\1.0.1\lib\net45\</FrameworkPathOverride>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461' AND '$(MSBuildRuntimeType)' == 'Core' AND '$(OS)' != 'Windows_NT'">
+    <PackageReference Include="Microsoft.TargetingPack.NETFramework.v4.6.1" Version="1.0.1" ExcludeAssets="All" PrivateAssets="All" GeneratePathProperty="true" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net461' AND '$(MSBuildRuntimeType)' == 'Core' AND '$(OS)' != 'Windows_NT' AND '$(NuGetPackageRoot)' != ''">
+    <FrameworkPathOverride>$(NuGetPackageRoot)microsoft.targetingpack.netframework.v4.6.1\1.0.1\lib\net461\</FrameworkPathOverride>
+  </PropertyGroup>
 </Project>
