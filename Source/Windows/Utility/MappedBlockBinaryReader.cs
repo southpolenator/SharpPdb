@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpUtilities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -327,20 +328,38 @@ namespace SharpPdb.Windows.Utility
         }
 
         /// <summary>
+        /// Reads bytes buffer from the stream.
+        /// </summary>
+        /// <param name="bytes">Buffer pointer where bytes should be stored.</param>
+        /// <param name="count">Number of bytes to from the stream</param>
+        public unsafe void ReadBytes(byte* bytes, uint count)
+        {
+            while (count > 0)
+            {
+                uint read = count < blockRemaining ? count : blockRemaining;
+
+                BaseReader.ReadBytes(bytes, read);
+                Move(read);
+                count -= read;
+                bytes += read;
+            }
+        }
+
+        /// <summary>
         /// Moves position by the specified bytes.
         /// </summary>
         /// <param name="bytes">Number of bytes to move the stream.</param>
-        public void ReadFake(uint bytes)
+        public void Move(uint bytes)
         {
             while (bytes > blockRemaining)
             {
                 bytes -= blockRemaining;
-                ReadFake(blockRemaining);
+                Move(blockRemaining);
             }
 
             position += bytes;
             blockRemaining -= bytes;
-            BaseReader.ReadFake(bytes);
+            BaseReader.Move(bytes);
             CheckMoveReader();
         }
 

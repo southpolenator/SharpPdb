@@ -1,4 +1,4 @@
-﻿using SharpPdb.Windows.Utility;
+﻿using SharpUtilities;
 using System.Text;
 
 namespace SharpPdb.Windows.DBI

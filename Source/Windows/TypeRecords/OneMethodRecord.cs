@@ -1,4 +1,4 @@
-﻿using SharpPdb.Windows.Utility;
+﻿using SharpUtilities;
 
 namespace SharpPdb.Windows.TypeRecords
 {
@@ -49,7 +49,7 @@ namespace SharpPdb.Windows.TypeRecords
                 Attributes = MemberAttributes.Read(reader)
             };
             if (isFromOverloadedList)
-                reader.ReadFake(2); // 2 = sizeof(ushort)
+                reader.Move(2); // 2 = sizeof(ushort)
             record.Type = TypeIndex.Read(reader);
             record.VFTableOffset = record.Attributes.IsIntroducedVirtual ? reader.ReadInt() : -1;
             if (!isFromOverloadedList)

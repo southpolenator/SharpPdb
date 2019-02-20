@@ -130,7 +130,7 @@ namespace SharpPdb.Windows.TPI
                     DataLen = dataLen,
                 });
                 position += dataLen + RecordPrefix.Size;
-                reader.ReadFake(dataLen);
+                reader.Move(dataLen);
             }
             typesCache = new ArrayCache<TypeRecord>(references.Count, true, ReadType);
             typesByKindCache = new DictionaryCache<TypeLeafKind, TypeRecord[]>(GetTypesByKind);

@@ -72,7 +72,7 @@ namespace SharpPdb.Windows
                     DataLen = dataLen,
                 });
                 position += dataLen + RecordPrefix.Size;
-                reader.ReadFake(dataLen);
+                reader.Move(dataLen);
             }
 
             symbolsByKind = new DictionaryCache<SymbolRecordKind, SymbolRecord[]>(GetSymbolsByKind);

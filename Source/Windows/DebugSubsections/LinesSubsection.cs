@@ -1,4 +1,4 @@
-﻿using SharpPdb.Windows.Utility;
+﻿using SharpUtilities;
 using System.Collections.Generic;
 
 namespace SharpPdb.Windows.DebugSubsections

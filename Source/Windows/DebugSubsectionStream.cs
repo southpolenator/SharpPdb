@@ -47,7 +47,7 @@ namespace SharpPdb.Windows
                     DataLen = dataLen,
                 });
                 position += dataLen + 8;
-                reader.ReadFake(dataLen);
+                reader.Move(dataLen);
             }
 
             debugSubsectionsByKind = new DictionaryCache<DebugSubsectionKind, DebugSubsection[]>(GetDebugSubsectionsByKind);
