@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup>
     <!-- Nuget properties -->
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>1.0.1</FileVersion>
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <FileVersion>1.0.2</FileVersion>
+    <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>SharpStar Team</Authors>
     <Copyright>Copyright (C) SharpStar team 2015-2019</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
