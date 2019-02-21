@@ -39,13 +39,19 @@ namespace SharpPdb.Managed.Portable
         /// Initializes a new instance of the <see cref="PdbFile"/> class.
         /// </summary>
         /// <param name="file">File loaded into memory for faster parsing.</param>
-        public PdbFile(MemoryLoadedFile file)
+        public unsafe PdbFile(MemoryLoadedFile file)
+            : this(new MetadataReader(file.BasePointer, (int)file.Length))
         {
-            unsafe
-            {
-                Reader = new MetadataReader(file.BasePointer, (int)file.Length);
-            }
             this.file = file;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PdbFile"/> class.
+        /// </summary>
+        /// <param name="reader">Portable PDB metadata reader.</param>
+        internal PdbFile(MetadataReader reader)
+        {
+            Reader = reader;
             idCache = SimpleCache.CreateStruct(() => new BlobContentId(Reader.DebugMetadataHeader.Id));
             functionsCache = SimpleCache.CreateStruct(() =>
             {

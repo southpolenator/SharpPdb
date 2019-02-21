@@ -34,7 +34,14 @@ namespace SharpPdb.Managed
             {
             }
 
-            // TODO: Check if it is Portable PDB file that is embedded in the assembly.
+            // Check if it is Portable PDB file that is embedded in the assembly.
+            try
+            {
+                return new Portable.EmbeddedPdbFile(file);
+            }
+            catch
+            {
+            }
 
             // Unload file from memory.
             file.Dispose();
