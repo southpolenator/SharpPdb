@@ -339,7 +339,9 @@ namespace SharpPdb.Windows.Utility
                 uint read = count < blockRemaining ? count : blockRemaining;
 
                 BaseReader.ReadBytes(bytes, read);
-                Move(read);
+                position += read;
+                blockRemaining -= read;
+                CheckMoveReader();
                 count -= read;
                 bytes += read;
             }
