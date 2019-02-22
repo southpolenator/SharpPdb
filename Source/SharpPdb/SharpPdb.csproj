@@ -18,6 +18,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
     <Reference Include="System.Collections" />
     <Reference Include="System.Runtime" />
+    <Reference Include="System.IO" />
   </ItemGroup>
 
   <ItemGroup>
