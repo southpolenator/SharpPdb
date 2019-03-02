@@ -6,12 +6,14 @@ using Xunit;
 
 namespace SharpPdb.Windows.Tests.E2E
 {
-    public class NativeReadEverything : TestBase
+    public class ReadEverything : TestBase
     {
-        [Fact]
-        public void Test1()
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        public void Test1(int pdbIndex)
         {
-            using (PdbFile pdb = OpenPdb(1))
+            using (PdbFile pdb = OpenPdb(pdbIndex))
             {
                 Assert.NotNull(pdb.PdbSymbolStream);
                 ReadSymbolStream(pdb.PdbSymbolStream);
@@ -59,7 +61,16 @@ namespace SharpPdb.Windows.Tests.E2E
 
         private void ReadTpiStream(TpiStream tpiStream)
         {
-            Assert.NotNull(tpiStream.HashValues);
+            if (tpiStream.HashSubstream != null)
+            {
+                Assert.NotNull(tpiStream.HashValues);
+                Assert.NotEmpty(tpiStream.TypeIndexOffsets);
+            }
+            else
+            {
+                Assert.Null(tpiStream.HashValues);
+                Assert.Null(tpiStream.TypeIndexOffsets);
+            }
             if (tpiStream.HashSubstream != null && tpiStream.Header.HashAdjustersBuffer.Length > 0)
                 Assert.NotNull(tpiStream.HashAdjusters);
             else
@@ -75,7 +86,6 @@ namespace SharpPdb.Windows.Tests.E2E
                 Assert.NotEmpty(tpiStream.GetIndexes(kind));
                 Assert.NotEmpty(tpiStream[kind]);
             }
-            Assert.NotEmpty(tpiStream.TypeIndexOffsets);
 
             // Check type record kinds
             var allKinds = new[]
@@ -110,7 +120,8 @@ namespace SharpPdb.Windows.Tests.E2E
                 VirtualFunctionPointerRecord.Kinds,
                 VirtualFunctionTableShapeRecord.Kinds,
             };
-            Assert.NotEmpty(allKinds.SelectMany(ka => ka.SelectMany(k => tpiStream[k])));
+            if (references.Count > 0)
+                Assert.NotEmpty(allKinds.SelectMany(ka => ka.SelectMany(k => tpiStream[k])));
         }
     }
 }
