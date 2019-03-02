@@ -2,7 +2,6 @@
 using SharpPdb.Windows.SymbolRecords;
 using SharpPdb.Windows.TPI;
 using SharpPdb.Windows.TypeRecords;
-using System;
 using System.Linq;
 using Xunit;
 
@@ -13,6 +12,7 @@ namespace SharpPdb.Windows.Tests.E2E
         [Theory]
         [InlineData(1)]
         [InlineData(2)]
+        [InlineData(3)]
         public void Test1(int pdbIndex)
         {
             using (PdbFile pdb = OpenPdb(pdbIndex))
