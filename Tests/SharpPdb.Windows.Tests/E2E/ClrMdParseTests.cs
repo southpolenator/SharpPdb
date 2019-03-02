@@ -10,7 +10,7 @@ namespace SharpPdb.Windows.Tests.E2E
 {
     public class ClrMdParseTests : TestBase
     {
-        [Fact]
+        //[Fact]
         public void Test2()
         {
             using (PdbFile pdb = OpenPdb(2))
