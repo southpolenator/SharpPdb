@@ -68,7 +68,7 @@ namespace SharpPdb.Windows
         /// <summary>
         /// Initializes a new instance of the <see cref="PdbFile"/> class.
         /// </summary>
-        /// <param name="file">File loaded into memory.</param>
+        /// <param name="file">File loaded into memory. Note that file will be closed when instance of this type is disposed.</param>
         public PdbFile(MemoryLoadedFile file)
         {
             Initialize(file);
@@ -213,7 +213,7 @@ namespace SharpPdb.Windows
         /// </summary>
         public void Dispose()
         {
-            File.Dispose();
+            File?.Dispose();
         }
     }
 }
