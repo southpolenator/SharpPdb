@@ -25,6 +25,7 @@ namespace SharpPdb.Windows.MSF.Tests
             Assert.ThrowsAny<Exception>(() => CreateSuperBlock(SuperBlock.Magic, 512, 1, 4, 3, 0, 1).Validate());
             Assert.ThrowsAny<Exception>(() => CreateSuperBlock(SuperBlock.Magic, 512, 1, 4, 512000, 0, 1).Validate());
             Assert.ThrowsAny<Exception>(() => CreateSuperBlock(SuperBlock.Magic, 512, 1, 4, 0, 0, 0).Validate());
+            Assert.ThrowsAny<Exception>(() => CreateSuperBlock(SuperBlock.Magic, 512, 1, 4, 0, 0, 5).Validate());
             Assert.ThrowsAny<Exception>(() => CreateSuperBlock(SuperBlock.Magic, 512, 0, 4, 0, 0, 1).Validate());
         }
 
