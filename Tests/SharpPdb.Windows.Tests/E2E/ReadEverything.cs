@@ -1,6 +1,8 @@
-﻿using SharpPdb.Windows.SymbolRecords;
+﻿using SharpPdb.Windows.DBI;
+using SharpPdb.Windows.SymbolRecords;
 using SharpPdb.Windows.TPI;
 using SharpPdb.Windows.TypeRecords;
+using System;
 using System.Linq;
 using Xunit;
 
@@ -15,11 +17,27 @@ namespace SharpPdb.Windows.Tests.E2E
         {
             using (PdbFile pdb = OpenPdb(pdbIndex))
             {
+                Assert.NotNull(pdb.DbiStream);
+                ReadDbiStream(pdb.DbiStream);
                 Assert.NotNull(pdb.PdbSymbolStream);
                 ReadSymbolStream(pdb.PdbSymbolStream);
                 Assert.NotNull(pdb.TpiStream);
                 ReadTpiStream(pdb.TpiStream);
             }
+        }
+
+        private void ReadDbiStream(DbiStream dbiStream)
+        {
+            Assert.NotEqual(0, dbiStream.GlobalSymbolStreamIndex);
+            if (dbiStream.SectionContributions != null)
+                Assert.Null(dbiStream.SectionContributions2);
+            else
+                Assert.NotNull(dbiStream.SectionContributions2);
+            Assert.NotNull(dbiStream.SectionHeaders);
+            Assert.NotNull(dbiStream.SectionMap);
+            if (dbiStream.FpoStream != null)
+                Assert.NotNull(dbiStream.FpoRecords);
+            Assert.NotNull(dbiStream.ECNames);
         }
 
         private void ReadSymbolStream(SymbolStream symbolStream)
@@ -53,6 +71,7 @@ namespace SharpPdb.Windows.Tests.E2E
                 SectionSymbol.Kinds,
                 ThreadLocalDataSymbol.Kinds,
                 Thunk32Symbol.Kinds,
+                TokenReferenceSymbol.Kinds,
                 TrampolineSymbol.Kinds,
                 UdtSymbol.Kinds,
             };
