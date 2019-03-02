@@ -1,4 +1,5 @@
-﻿using SharpPdb.Windows.TPI;
+﻿using SharpPdb.Windows.SymbolRecords;
+using SharpPdb.Windows.TPI;
 using SharpPdb.Windows.TypeRecords;
 using System.Linq;
 using Xunit;
@@ -31,6 +32,29 @@ namespace SharpPdb.Windows.Tests.E2E
             var kinds = references.Select(r => r.Kind).Distinct().ToArray();
             foreach (var kind in kinds)
                 Assert.NotEmpty(symbolStream[kind]);
+
+            // Check symbol record kinds
+            var allKinds = new[]
+            {
+                AttributeSlotSymbol.Kinds,
+                BlockSymbol.Kinds,
+                CoffGroupSymbol.Kinds,
+                ConstantSymbol.Kinds,
+                DataSymbol.Kinds,
+                EndSymbol.Kinds,
+                ManagedProcedureSymbol.Kinds,
+                NamespaceSymbol.Kinds,
+                OemSymbol.Kinds,
+                ProcedureReferenceSymbol.Kinds,
+                ProcedureSymbol.Kinds,
+                Public32Symbol.Kinds,
+                SectionSymbol.Kinds,
+                ThreadLocalDataSymbol.Kinds,
+                Thunk32Symbol.Kinds,
+                TrampolineSymbol.Kinds,
+                UdtSymbol.Kinds,
+            };
+            Assert.NotEmpty(allKinds.SelectMany(ka => ka.SelectMany(k => symbolStream[k])));
         }
 
         private void ReadTpiStream(TpiStream tpiStream)
