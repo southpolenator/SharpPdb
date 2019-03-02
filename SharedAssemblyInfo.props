@@ -20,6 +20,7 @@
     <!-- Enable embedding pdb -->
     <DebugSymbols>true</DebugSymbols>
     <DebugType>embedded</DebugType>
+    <DebugType Condition="'$(UsingAppVeyor)' == 'True'">Full</DebugType>
 
     <!-- Singing assemblies -->
     <SignAssembly>true</SignAssembly>
