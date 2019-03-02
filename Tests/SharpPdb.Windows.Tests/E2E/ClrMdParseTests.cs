@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace SharpPdb.Windows.Tests
+namespace SharpPdb.Windows.Tests.E2E
 {
     public class ClrMdParseTests : TestBase
     {
