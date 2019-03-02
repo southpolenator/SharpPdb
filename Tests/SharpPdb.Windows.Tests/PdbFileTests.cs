@@ -1,5 +1,6 @@
 ﻿using SharpUtilities;
 using System;
+using System.Reflection;
 using Xunit;
 
 namespace SharpPdb.Windows.Tests
@@ -22,6 +23,9 @@ namespace SharpPdb.Windows.Tests
         public void OpenFail()
         {
             Assert.ThrowsAny<Exception>(() => new PdbFile(Guid.NewGuid().ToString()));
+
+            MemoryLoadedFile file = new MemoryLoadedFile(Assembly.GetExecutingAssembly().Location);
+            Assert.ThrowsAny<Exception>(() => new PdbFile(file));
         }
 
         [Fact]
