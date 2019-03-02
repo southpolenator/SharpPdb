@@ -1,4 +1,5 @@
 ﻿using SharpPdb.Windows.TPI;
+using SharpPdb.Windows.TypeRecords;
 using System.Linq;
 using Xunit;
 
@@ -51,6 +52,41 @@ namespace SharpPdb.Windows.Tests.E2E
                 Assert.NotEmpty(tpiStream[kind]);
             }
             Assert.NotEmpty(tpiStream.TypeIndexOffsets);
+
+            // Check type record kinds
+            var allKinds = new[]
+            {
+                ArgumentListRecord.Kinds,
+                ArrayRecord.Kinds,
+                BaseClassRecord.Kinds,
+                BitFieldRecord.Kinds,
+                BuildInfoRecord.Kinds,
+                ClassRecord.Kinds,
+                DataMemberRecord.Kinds,
+                EnumeratorRecord.Kinds,
+                EnumRecord.Kinds,
+                FieldListRecord.Kinds,
+                FunctionIdRecord.Kinds,
+                LabelRecord.Kinds,
+                ListContinuationRecord.Kinds,
+                MemberFunctionIdRecord.Kinds,
+                MemberFunctionRecord.Kinds,
+                MethodOverloadListRecord.Kinds,
+                ModifierRecord.Kinds,
+                NestedTypeRecord.Kinds,
+                OneMethodRecord.Kinds,
+                OverloadedMethodRecord.Kinds,
+                PointerRecord.Kinds,
+                StaticDataMemberRecord.Kinds,
+                StringIdRecord.Kinds,
+                StringListRecord.Kinds,
+                UdtModuleSourceLineRecord.Kinds,
+                UnionRecord.Kinds,
+                VirtualBaseClassRecord.Kinds,
+                VirtualFunctionPointerRecord.Kinds,
+                VirtualFunctionTableShapeRecord.Kinds,
+            };
+            Assert.NotEmpty(allKinds.SelectMany(ka => ka.SelectMany(k => tpiStream[k])));
         }
     }
 }
