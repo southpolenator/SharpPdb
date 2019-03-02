@@ -23,9 +23,7 @@ namespace SharpPdb.Windows.Tests
         public void OpenFail()
         {
             Assert.ThrowsAny<Exception>(() => new PdbFile(Guid.NewGuid().ToString()));
-
-            MemoryLoadedFile file = new MemoryLoadedFile(Assembly.GetExecutingAssembly().Location);
-            Assert.ThrowsAny<Exception>(() => new PdbFile(file));
+            Assert.ThrowsAny<Exception>(() => new PdbFile(Assembly.GetExecutingAssembly().Location));
         }
 
         [Fact]
