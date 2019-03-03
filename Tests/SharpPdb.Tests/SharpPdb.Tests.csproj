@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(EnlistmentRoot)Tests\SharpPdb.Common.Tests\SharpPdb.Common.Tests.csproj" />
-    <ProjectReference Include="$(EnlistmentRoot)Source\Windows\SharpPdb.Windows.csproj" />
+    <ProjectReference Include="$(EnlistmentRoot)Source\SharpPdb\SharpPdb.csproj" />
   </ItemGroup>
 
 </Project>

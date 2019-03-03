@@ -7,16 +7,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <NoWarn>1591</NoWarn>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(EnlistmentRoot)Tests\SharpPdb.Common.Tests\SharpPdb.Common.Tests.csproj" />
+    <ProjectReference Include="$(EnlistmentRoot)Source\SharpPdb\SharpPdb.csproj" />
     <ProjectReference Include="$(EnlistmentRoot)Source\Windows\SharpPdb.Windows.csproj" />
   </ItemGroup>
 

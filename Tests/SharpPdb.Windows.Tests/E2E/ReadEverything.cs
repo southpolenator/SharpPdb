@@ -1,4 +1,5 @@
-﻿using SharpPdb.Windows.DBI;
+﻿using SharpPdb.Common.Tests;
+using SharpPdb.Windows.DBI;
 using SharpPdb.Windows.SymbolRecords;
 using SharpPdb.Windows.TPI;
 using SharpPdb.Windows.TypeRecords;
@@ -15,7 +16,7 @@ namespace SharpPdb.Windows.Tests.E2E
         [InlineData(3)]
         public void Test1(int pdbIndex)
         {
-            using (PdbFile pdb = OpenPdb(pdbIndex))
+            using (PdbFile pdb = OpenWindowsPdb(pdbIndex))
             {
                 Assert.NotNull(pdb.DbiStream);
                 ReadDbiStream(pdb.DbiStream);

@@ -1,4 +1,5 @@
-﻿using SharpUtilities;
+﻿using SharpPdb.Common.Tests;
+using SharpUtilities;
 using System;
 using System.Reflection;
 using Xunit;
@@ -10,7 +11,7 @@ namespace SharpPdb.Windows.Tests
         [Fact]
         public void Open()
         {
-            using (PdbFile pdb = OpenPdb(1))
+            using (PdbFile pdb = OpenWindowsPdb(1))
             {
             }
 
@@ -29,7 +30,7 @@ namespace SharpPdb.Windows.Tests
         [Fact]
         public void Properties()
         {
-            using (PdbFile pdb = OpenPdb(1))
+            using (PdbFile pdb = OpenWindowsPdb(1))
             {
                 Assert.NotNull(pdb.FreePageMap);
                 Assert.Equal(531U, pdb.FreePageMapBitLength);

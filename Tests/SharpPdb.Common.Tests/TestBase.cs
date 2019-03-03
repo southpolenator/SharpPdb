@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace SharpPdb.Windows.Tests
+namespace SharpPdb.Common.Tests
 {
     public class TestBase
     {
@@ -39,9 +39,14 @@ namespace SharpPdb.Windows.Tests
             return GetAbsoluteBinPath(Path.Combine(DefaultPdbsPath, pdbName));
         }
 
-        public static PdbFile OpenPdb(int pdbIndex)
+        public static Windows.PdbFile OpenWindowsPdb(int pdbIndex)
         {
-            return new PdbFile(GetPdbPath(pdbIndex));
+            return new Windows.PdbFile(GetPdbPath(pdbIndex));
+        }
+
+        public static Managed.IPdbFile OpenManagedPdb(int pdbIndex)
+        {
+            return Managed.PdbFileReader.OpenPdb(GetPdbPath(pdbIndex));
         }
     }
 }
