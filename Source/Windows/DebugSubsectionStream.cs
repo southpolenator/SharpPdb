@@ -1,5 +1,4 @@
 ﻿using SharpPdb.Windows.DebugSubsections;
-using SharpPdb.Windows.Utility;
 using SharpUtilities;
 using System;
 using System.Collections.Generic;
@@ -77,12 +76,17 @@ namespace SharpPdb.Windows
         /// <returns>Array of debug subsections for the specified debug subsection kind.</returns>
         private DebugSubsection[] GetDebugSubsectionsByKind(DebugSubsectionKind kind)
         {
-            List<DebugSubsection> symbols = new List<DebugSubsection>();
+            List<DebugSubsection> debugSubsections = new List<DebugSubsection>();
 
             for (int i = 0; i < references.Count; i++)
                 if (references[i].Kind == kind)
-                    symbols.Add(GetDebugSubsection(i));
-            return symbols.ToArray();
+                {
+                    DebugSubsection debugSubsection = GetDebugSubsection(i);
+
+                    if (debugSubsection != null)
+                        debugSubsections.Add(debugSubsection);
+                }
+            return debugSubsections.ToArray();
         }
 
         /// <summary>
@@ -102,7 +106,11 @@ namespace SharpPdb.Windows
                 case DebugSubsectionKind.FileChecksums:
                     return FileChecksumSubsection.Read(Reader, reference.Kind);
                 default:
-                    throw new NotImplementedException();
+#if DEBUG
+                    throw new NotImplementedException($"Unknown reference kind: {reference.Kind}");
+#else
+                    return null;
+#endif
             }
         }
     }

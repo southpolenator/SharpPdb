@@ -1,5 +1,4 @@
 ﻿using SharpPdb.Windows.SymbolRecords;
-using SharpPdb.Windows.Utility;
 using SharpUtilities;
 using System;
 using System.Collections.Generic;
@@ -131,7 +130,12 @@ namespace SharpPdb.Windows
 
             for (int i = 0; i < references.Count; i++)
                 if (references[i].Kind == kind)
-                    symbols.Add(this.symbols[i]);
+                {
+                    SymbolRecord symbol = this.symbols[i];
+
+                    if (symbol != null)
+                        symbols.Add(symbol);
+                }
             return symbols.ToArray();
         }
 
@@ -189,7 +193,11 @@ namespace SharpPdb.Windows
                 case SymbolRecordKind.S_END:
                     return EndSymbol.Read(Reader, this, index, reference.Kind);
                 default:
-                    throw new NotImplementedException();
+#if DEBUG
+                    throw new NotImplementedException($"Unknown reference kind: {reference.Kind}");
+#else
+                    return null;
+#endif
             }
         }
     }

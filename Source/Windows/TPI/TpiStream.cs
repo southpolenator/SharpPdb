@@ -1,5 +1,4 @@
 ﻿using SharpPdb.Windows.TypeRecords;
-using SharpPdb.Windows.Utility;
 using SharpUtilities;
 using System;
 using System.Collections.Generic;
@@ -260,7 +259,12 @@ namespace SharpPdb.Windows.TPI
 
             for (int i = 0; i < references.Count; i++)
                 if (references[i].Kind == kind)
-                    records.Add(typesCache[i]);
+                {
+                    TypeRecord record = typesCache[i];
+
+                    if (record != null)
+                        records.Add(record);
+                }
             return records.ToArray();
         }
 
@@ -345,7 +349,11 @@ namespace SharpPdb.Windows.TPI
                     typeRecord = FunctionIdRecord.Read(reader, reference.Kind);
                     break;
                 default:
+#if DEBUG
                     throw new NotImplementedException($"Unknown reference kind: {reference.Kind}");
+#else
+                    return null;
+#endif
             }
             if (reader.Position + 4 < dataEnd || reader.Position > dataEnd)
                 throw new Exception("Parsing went wrong");
