@@ -25,3 +25,8 @@ After that, you can use `dotnet` command for running the tests:
 ```
 dotnet test
 ```
+
+## Using library
+If you want to read managed PDBs, you should use [SharpPdb.Managed.PdbFileReader](Source/SharpPdb/Managed/PdbFileReader.cs) class for opening PDB file and continue with [SharpPdb.Managed.IPdbFile](Source/SharpPdb/Managed/IPdbFile.cs) interface.
+
+For reading Windows PDB file directly without wrapper, you can use [SharpPdb.Windows.PdbFile](Source/Windows/PDBFile.cs) class. Then you can use properties to access PDB streams.
