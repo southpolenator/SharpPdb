@@ -9,10 +9,19 @@ Collections of classes for reading PDB files, both Windows and Portable PDBs.
 
 If you want newer version than what is available on nuget.org, you can click on [Latest build](https://ci.appveyor.com/project/southpolenator/sharppdb/branch/master), select Configuration and click on Artifacts. You can also use private nuget feed from [AppVeyor CI builds](https://ci.appveyor.com/nuget/sharppdb-qkch7k8m0st4).
 
-## Building and testing
-Use `dotnet` for building, creating nuget and running tests:
+## Building
+Use `dotnet` command for building and creating nugets:
 ```
 dotnet build
 dotnet pack
+```
+
+## Running tests
+Before running tests, you need to download input PDBs. Change directory to `pdbs` and run download script:
+- On Windows: `download.ps1`
+- On Linux: `download.sh`
+
+After that, you can use `dotnet` command for running the tests:
+```
 dotnet test
 ```
