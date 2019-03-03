@@ -167,6 +167,8 @@ namespace SharpPdb.Windows
                 case SymbolRecordKind.S_PROCREF:
                 case SymbolRecordKind.S_LPROCREF:
                     return ProcedureReferenceSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_TOKENREF:
+                    return TokenReferenceSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_UDT:
                 case SymbolRecordKind.S_COBOLUDT:
                     return UdtSymbol.Read(Reader, this, index, reference.Kind);

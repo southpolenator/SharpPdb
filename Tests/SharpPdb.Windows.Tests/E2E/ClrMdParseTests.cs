@@ -1,4 +1,5 @@
-﻿using SharpPdb.Windows.DebugSubsections;
+﻿using SharpPdb.Common.Tests;
+using SharpPdb.Windows.DebugSubsections;
 using SharpPdb.Windows.SymbolRecords;
 using SharpUtilities;
 using System;
@@ -6,14 +7,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace SharpPdb.Windows.Tests
+namespace SharpPdb.Windows.Tests.E2E
 {
     public class ClrMdParseTests : TestBase
     {
         [Fact]
         public void Test2()
         {
-            using (PdbFile pdb = OpenPdb(2))
+            using (PdbFile pdb = OpenWindowsPdb(2))
             {
                 // Verify info stream header
                 Assert.Equal(PIS.InfoStreamVersion.VC70, pdb.InfoStream.Header.Version);

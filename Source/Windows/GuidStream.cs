@@ -15,14 +15,15 @@ namespace SharpPdb.Windows
         public GuidStream(PdbStream stream)
         {
             Stream = stream;
-            Language = stream.Reader.ReadGuid();
-            Vendor = stream.Reader.ReadGuid();
-            DocumentType = stream.Reader.ReadGuid();
-            Algorithm = stream.Reader.ReadGuid();
-            uint checksumSize = stream.Reader.ReadUint();
-            uint sourceSize = stream.Reader.ReadUint();
-            ChecksumReader = stream.Reader.ReadSubstream(checksumSize);
-            SourceReader = stream.Reader.ReadSubstream(sourceSize);
+            IBinaryReader reader = stream.Reader.Duplicate();
+            Language = reader.ReadGuid();
+            Vendor = reader.ReadGuid();
+            DocumentType = reader.ReadGuid();
+            Algorithm = reader.ReadGuid();
+            uint checksumSize = reader.ReadUint();
+            uint sourceSize = reader.ReadUint();
+            ChecksumReader = reader.ReadSubstream(checksumSize);
+            SourceReader = reader.ReadSubstream(sourceSize);
         }
 
         /// <summary>
