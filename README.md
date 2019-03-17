@@ -29,4 +29,6 @@ dotnet test
 ## Using library
 If you want to read managed PDBs, you should use [SharpPdb.Managed.PdbFileReader](Source/SharpPdb/Managed/PdbFileReader.cs) class for opening PDB file and continue with [SharpPdb.Managed.IPdbFile](Source/SharpPdb/Managed/IPdbFile.cs) interface.
 
+If you want to read native PDBs, you should use [SharpPdb.Native.PdbFileReader](Source/SharpPdb/Native/PdbFileReader.cs) class. It's public functions and properties provide access to PDB data.
+
 For reading Windows PDB file directly without wrapper, you can use [SharpPdb.Windows.PdbFile](Source/Windows/PDBFile.cs) class. Then you can use properties to access PDB streams.
