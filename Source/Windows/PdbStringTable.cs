@@ -96,5 +96,14 @@ namespace SharpPdb.Windows
         /// </summary>
         /// <param name="index">Index of the string in this string table.</param>
         public string this[int index] => stringsCache[Offsets[index]];
+
+        /// <summary>
+        /// Gets string at the specified offset.
+        /// </summary>
+        /// <param name="offset">Offset where string is stored in the stream.</param>
+        public string GetString(uint offset)
+        {
+            return stringsCache[offset];
+        }
     }
 }

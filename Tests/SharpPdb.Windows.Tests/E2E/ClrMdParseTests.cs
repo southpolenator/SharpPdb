@@ -31,7 +31,7 @@ namespace SharpPdb.Windows.Tests.E2E
                 Assert.Equal(9, namesStreamMap[@"/src/files/c:\projects\windbgcs-dumps\source\clr\sharedlibrary\sharedlibrary.cs"]);
 
                 // Verify names stream
-                PdbStringTable namesStream = new PdbStringTable(pdb.Streams[pdb.InfoStream.NamedStreamMap.Streams["/names"]].Reader);
+                PdbStringTable namesStream = pdb.InfoStream.NamesMap;
 
                 Assert.Equal(@"C:\projects\windbgcs-dumps\Source\Clr\SharedLibrary\SharedLibrary.cs", namesStream.Dictionary[1]);
                 Assert.Equal(@"c:\projects\windbgcs-dumps\source\clr\sharedlibrary\sharedlibrary.cs", namesStream.Dictionary[71]);

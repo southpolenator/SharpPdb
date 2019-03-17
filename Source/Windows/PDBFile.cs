@@ -1,4 +1,5 @@
 ﻿using SharpPdb.Windows.DBI;
+using SharpPdb.Windows.GSI;
 using SharpPdb.Windows.MSF;
 using SharpPdb.Windows.PIS;
 using SharpPdb.Windows.TPI;
@@ -38,6 +39,11 @@ namespace SharpPdb.Windows
         private SimpleCacheStruct<SymbolStream> pdbSymbolStreamCache;
 
         /// <summary>
+        /// Cache for <see cref="GlobalsStream"/>.
+        /// </summary>
+        private SimpleCacheStruct<GlobalsStream> globalsStreamCache;
+
+        /// <summary>
         /// Cache for <see cref="TpiStream"/>.
         /// </summary>
         private SimpleCacheStruct<TpiStream> tpiStreamCache;
@@ -74,10 +80,24 @@ namespace SharpPdb.Windows
             Initialize(file);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PdbFile"/> class.
+        /// </summary>
+        /// <param name="reader">Binary stream reader of the PDB file.</param>
+        public PdbFile(IBinaryReader reader)
+        {
+            Initialize(reader);
+        }
+
         private void Initialize(MemoryLoadedFile file)
         {
             File = file;
-            Reader = new MemoryLoadedFileReader(File);
+            Initialize(new MemoryLoadedFileReader(file));
+        }
+
+        private void Initialize(IBinaryReader reader)
+        {
+            Reader = reader;
 
             // Parse file headers
 
@@ -112,7 +132,7 @@ namespace SharpPdb.Windows
                 currentFpmBlock += SuperBlock.BlockSize;
             }
 
-            IBinaryReader fpmStream = new MappedBlockBinaryReader<MemoryLoadedFileReader>(fpmBlocks, SuperBlock.BlockSize, (SuperBlock.NumBlocks + 7) / 8, Reader);
+            IBinaryReader fpmStream = new MappedBlockBinaryReader(fpmBlocks, SuperBlock.BlockSize, (SuperBlock.NumBlocks + 7) / 8, Reader);
             FreePageMap = Reader.ReadByteArray((int)fpmStream.Length);
 
             // Read directory blocks
@@ -148,9 +168,24 @@ namespace SharpPdb.Windows
 
             dbiStreamCache = SimpleCache.CreateStruct(() => new DbiStream(streams[(uint)SpecialStream.StreamDBI]));
             infoStreamCache = SimpleCache.CreateStruct(() => new InfoStream(streams[(uint)SpecialStream.StreamPDB]));
-            pdbSymbolStreamCache = SimpleCache.CreateStruct(() => new SymbolStream(streams[DbiStream.SymbolRecordStreamIndex]));
             tpiStreamCache = SimpleCache.CreateStruct(() => new TpiStream(streams[(uint)SpecialStream.StreamTPI]));
             ipiStreamCache = SimpleCache.CreateStruct(() => new TpiStream(streams[(uint)SpecialStream.StreamIPI]));
+            pdbSymbolStreamCache = SimpleCache.CreateStruct(() =>
+            {
+                PdbStream stream = GetStream(DbiStream.SymbolRecordStreamIndex);
+
+                if (stream != null)
+                    return new SymbolStream(stream);
+                return null;
+            });
+            globalsStreamCache = SimpleCache.CreateStruct(() =>
+            {
+                PdbStream stream = GetStream(DbiStream.GlobalSymbolStreamIndex);
+
+                if (stream != null)
+                    return new GlobalsStream(stream);
+                return null;
+            });
         }
 
         /// <summary>
@@ -184,6 +219,11 @@ namespace SharpPdb.Windows
         public SymbolStream PdbSymbolStream => pdbSymbolStreamCache.Value;
 
         /// <summary>
+        /// Gets parsed globals stream.
+        /// </summary>
+        public GlobalsStream GlobalsStream => globalsStreamCache.Value;
+
+        /// <summary>
         /// Gets parsed TPI stream.
         /// </summary>
         public TpiStream TpiStream => tpiStreamCache.Value;
@@ -206,7 +246,18 @@ namespace SharpPdb.Windows
         /// <summary>
         /// Gets the file reader.
         /// </summary>
-        internal MemoryLoadedFileReader Reader { get; private set; }
+        internal IBinaryReader Reader { get; private set; }
+
+        /// <summary>
+        /// Safely gets the PDB stream from <see cref="Streams"/>. It will return <c>null</c> if index is outside of the range.
+        /// </summary>
+        /// <param name="streamIndex">Index in the <see cref="Streams"/> list.</param>
+        public PdbStream GetStream(int streamIndex)
+        {
+            if (streamIndex > 0 && streamIndex < Streams.Count)
+                return Streams[streamIndex];
+            return null;
+        }
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.

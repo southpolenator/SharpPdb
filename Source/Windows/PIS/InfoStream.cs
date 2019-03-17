@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpUtilities;
+using System;
 using System.Collections.Generic;
 
 namespace SharpPdb.Windows.PIS
@@ -8,6 +9,11 @@ namespace SharpPdb.Windows.PIS
     /// </summary>
     public class InfoStream
     {
+        /// <summary>
+        /// Cache for <see cref="NamesMap"/> property.
+        /// </summary>
+        private SimpleCacheStruct<PdbStringTable> namesMapCache;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InfoStream"/> class.
         /// </summary>
@@ -22,6 +28,19 @@ namespace SharpPdb.Windows.PIS
             if (Header.Version != InfoStreamVersion.VC70 && Header.Version != InfoStreamVersion.VC80 && Header.Version != InfoStreamVersion.VC110 && Header.Version != InfoStreamVersion.VC140)
                 throw new Exception("Unsupported PDB info stream version.");
             NamedStreamMap = new NamedStreamMap(stream.Reader);
+            namesMapCache = SimpleCache.CreateStruct(() =>
+            {
+                int namesMapStreamIndex;
+
+                if (!NamedStreamMap.Streams.TryGetValue("/names", out namesMapStreamIndex))
+                    return null;
+
+                PdbStream namesMapStream = Stream.File.GetStream(namesMapStreamIndex);
+
+                if (namesMapStream == null)
+                    return null;
+                return new PdbStringTable(namesMapStream.Reader);
+            });
 
             // Read feature signatures
             bool stop = false;
@@ -72,5 +91,10 @@ namespace SharpPdb.Windows.PIS
         /// Gets the PDB features.
         /// </summary>
         public PdbFeatures[] Features { get; private set; }
+
+        /// <summary>
+        /// Gets the string table from the <c>/names</c> stream if exists or <c>null</c> otherwise.
+        /// </summary>
+        public PdbStringTable NamesMap => namesMapCache.Value;
     }
 }

@@ -174,18 +174,7 @@ namespace SharpPdb.Windows.DBI
                 return result;
             });
 
-            sectionHeaderStreamCache = SimpleCache.CreateStruct(() =>
-            {
-                uint streamNumber = DebugStreamIndexes[(int)KnownDebugStreamIndex.SectionHdr];
-
-                if (streamNumber != InvalidStreamIndex)
-                {
-                    if (streamNumber >= Stream.File.Streams.Count)
-                        throw new Exception("No section header stream in PDB");
-                    return Stream.File.Streams[(int)streamNumber].Reader;
-                }
-                return null;
-            });
+            sectionHeaderStreamCache = SimpleCache.CreateStruct(() => GetKnownDebugStream(KnownDebugStreamIndex.SectionHdr)?.Reader);
             sectionHeadersCache = SimpleCache.CreateStruct(() =>
             {
                 if (SectionHeaderStream != null)
@@ -218,21 +207,7 @@ namespace SharpPdb.Windows.DBI
                 }
                 return null;
             });
-            fpoStreamCache = SimpleCache.CreateStruct(() =>
-            {
-                if (DebugStreamIndexes.Length > 0)
-                {
-                    uint streamNumber = DebugStreamIndexes[(int)KnownDebugStreamIndex.FPO];
-
-                    if (streamNumber != InvalidStreamIndex)
-                    {
-                        if (streamNumber >= Stream.File.Streams.Count)
-                            throw new Exception("No FPO stream in PDB");
-                        return Stream.File.Streams[(int)streamNumber].Reader;
-                    }
-                }
-                return null;
-            });
+            fpoStreamCache = SimpleCache.CreateStruct(() => GetKnownDebugStream(KnownDebugStreamIndex.FPO)?.Reader);
             fpoRecordsCache = SimpleCache.CreateStruct(() =>
             {
                 if (FpoStream != null)
@@ -353,5 +328,21 @@ namespace SharpPdb.Windows.DBI
         /// Gets the EC names string table.
         /// </summary>
         public PdbStringTable ECNames => ecNamesCache.Value;
+
+        /// <summary>
+        /// Safely gets known debug PDB stream. It will return <c>null</c> if it is out of bounds.
+        /// </summary>
+        /// <param name="knownDebugStreamIndex">Known debug stream index.</param>
+        public PdbStream GetKnownDebugStream(KnownDebugStreamIndex knownDebugStreamIndex)
+        {
+            int knownIndex = (int)knownDebugStreamIndex;
+
+            if (knownIndex < 0 || knownIndex >= DebugStreamIndexes.Length)
+                return null;
+
+            int streamIndex = DebugStreamIndexes[knownIndex];
+
+            return Stream.File.GetStream(streamIndex);
+        }
     }
 }

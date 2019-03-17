@@ -25,11 +25,6 @@ namespace SharpPdb.Managed.Windows
         private SimpleCacheStruct<List<IPdbFunction>> functionsCache;
 
         /// <summary>
-        /// Cache for <see cref="NamesStream"/> property.
-        /// </summary>
-        private SimpleCacheStruct<PdbStringTable> namesStreamCache;
-
-        /// <summary>
         /// Cache for source files accessed by indexing operator.
         /// </summary>
         private DictionaryCache<FileChecksumSubsection, PdbSource> sourcesCache;
@@ -65,20 +60,15 @@ namespace SharpPdb.Managed.Windows
                 }
                 return functions;
             });
-            namesStreamCache = SimpleCache.CreateStruct(() =>
-            {
-                return new PdbStringTable(Reader.Streams[Reader.InfoStream.NamedStreamMap.Streams["/names"]].Reader);
-            });
             sourcesCache = new DictionaryCache<FileChecksumSubsection, PdbSource>(checksum => new PdbSource(this, checksum));
             functionsByTokenCache = SimpleCache.CreateStruct(() => Functions.ToDictionary(f => f.Token));
             tokenRidMapCache = SimpleCache.CreateStruct(() =>
             {
-                uint streamId = Reader.DbiStream.DebugStreamIndexes[(int)KnownDebugStreamIndex.TokenRidMap];
+                var reader = Reader.DbiStream.GetKnownDebugStream(KnownDebugStreamIndex.TokenRidMap)?.Reader;
 
-                if (streamId == 0 || streamId == DbiStream.InvalidStreamIndex || streamId >= Reader.Streams.Count)
+                if (reader == null)
                     return null;
 
-                var reader = Reader.Streams[(int)streamId].Reader;
                 int count = (int)(reader.Length / 4); // 4 = sizeof(uint)
                 uint[] tokenRidMap = new uint[count];
 
@@ -97,7 +87,7 @@ namespace SharpPdb.Managed.Windows
         /// <summary>
         /// Gets the <c>/names</c> stream.
         /// </summary>
-        public PdbStringTable NamesStream => namesStreamCache.Value;
+        public PdbStringTable NamesStream => Reader.InfoStream.NamesMap;
 
         /// <summary>
         /// Gets the PDB file info stream header.

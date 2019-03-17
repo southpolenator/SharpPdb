@@ -48,5 +48,10 @@ namespace SharpPdb.Common.Tests
         {
             return Managed.PdbFileReader.OpenPdb(GetPdbPath(pdbIndex));
         }
+
+        public static Native.PdbFileReader OpenNativePdb(int pdbIndex)
+        {
+            return new Native.PdbFileReader(GetPdbPath(pdbIndex));
+        }
     }
 }

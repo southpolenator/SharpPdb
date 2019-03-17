@@ -52,7 +52,7 @@ namespace SharpPdb.Windows.TypeRecords
         public TypeIndex ArgumentList { get; private set; }
 
         /// <summary>
-        /// Gets the Logical <c>this</c> adjuster for the method.Whenever a class element is
+        /// Gets the Logical <c>this</c> adjuster for the method. Whenever a class element is
         /// referenced via the <c>this</c> pointer, <see cref="ThisPointerAdjustment"/> will be added to the resultant
         /// offset before referencing the element.
         /// </summary>

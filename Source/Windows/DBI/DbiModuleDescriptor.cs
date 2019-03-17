@@ -53,7 +53,7 @@ namespace SharpPdb.Windows.DBI
                 reader.Position += 4 - reader.Position % 4;
 
             // Higher level API initialization
-            moduleStreamCache = SimpleCache.CreateStruct(() => ModuleStreamIndex > 0 ? moduleList.DbiStream.Stream.File.Streams[ModuleStreamIndex] : null);
+            moduleStreamCache = SimpleCache.CreateStruct(() => moduleList.DbiStream.Stream.File.GetStream(ModuleStreamIndex));
             localSymbolStreamCache = SimpleCache.CreateStruct(() =>
             {
                 IBinaryReader sreader = ModuleStream.Reader.Duplicate();

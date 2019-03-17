@@ -192,6 +192,8 @@ namespace SharpPdb.Windows
                     return AttributeSlotSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_END:
                     return EndSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_ANNOTATIONREF:
+                    return AnnotationReferenceSymbol.Read(Reader, this, index, reference.Kind);
                 default:
 #if DEBUG
                     throw new NotImplementedException($"Unknown reference kind: {reference.Kind}");

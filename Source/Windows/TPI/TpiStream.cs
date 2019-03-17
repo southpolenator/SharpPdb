@@ -82,6 +82,11 @@ namespace SharpPdb.Windows.TPI
         private SimpleCacheStruct<HashTable> hashAdjustersCache;
 
         /// <summary>
+        /// Cache for <see cref="HashTable"/>.
+        /// </summary>
+        private SimpleCacheStruct<TypeIndexListItem[]> hashTableCache;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PdbStream"/> class.
         /// </summary>
         /// <param name="stream">PDB symbol stream.</param>
@@ -135,14 +140,7 @@ namespace SharpPdb.Windows.TPI
             typesByKindCache = new DictionaryCache<TypeLeafKind, TypeRecord[]>(GetTypesByKind);
 
             // Hash indices, hash values, etc come from the hash stream.
-            if (Header.HashStreamIndex != InvalidStreamIndex)
-            {
-                if (Header.HashStreamIndex >= Stream.File.Streams.Count)
-                    throw new Exception("Invalid TPI hash stream index.");
-
-                HashSubstream = Stream.File.Streams[Header.HashStreamIndex].Reader;
-            }
-
+            HashSubstream = Stream.File.GetStream(Header.HashStreamIndex)?.Reader;
             hashValuesCache = SimpleCache.CreateStruct(() =>
             {
                 if (HashSubstream != null)
@@ -176,6 +174,53 @@ namespace SharpPdb.Windows.TPI
                 {
                     HashSubstream.Position = Header.HashAdjustersBuffer.Offset;
                     return new HashTable(HashSubstream);
+                }
+                return null;
+            });
+            hashTableCache = SimpleCache.CreateStruct(() =>
+            {
+                uint[] hashes = HashValues;
+
+                if (hashes != null)
+                {
+                    // Construct hash table
+                    TypeIndexListItem[] hashTable = new TypeIndexListItem[Header.HashBucketsCount];
+
+                    for (uint ti = Header.TypeIndexBegin, i = 0; ti < Header.TypeIndexEnd; ti++, i++)
+                    {
+                        uint bucket = hashes[i] % Header.HashBucketsCount;
+
+                        hashTable[bucket] = new TypeIndexListItem(new TypeIndex(ti), hashTable[bucket]);
+                    }
+
+                    // Use hash adjusters to improve hash table
+                    if (HashAdjusters != null)
+                    {
+                        var namesMap = Stream.File.InfoStream.NamesMap;
+
+                        foreach (var kvp in HashAdjusters.Dictionary)
+                        {
+                            uint nameIndex = kvp.Key;
+                            TypeIndex typeIndex = new TypeIndex(kvp.Value);
+                            string name = namesMap.GetString(nameIndex);
+                            uint hash = Windows.HashTable.HashStringV1(name) % (uint)hashTable.Length;
+
+                            // Find type index hash adjusters wants to be head
+                            for (TypeIndexListItem item = hashTable[hash], previousItem = null; item != null; previousItem = item, item = item.Next)
+                                if (item.TypeIndex == typeIndex)
+                                {
+                                    if (previousItem == null)
+                                        // Our type index is already at the head
+                                        break;
+                                    previousItem.Next = item.Next;
+                                    item.Next = hashTable[hash];
+                                    hashTable[hash] = item;
+                                    break;
+                                }
+                        }
+                    }
+
+                    return hashTable;
                 }
                 return null;
             });
@@ -220,6 +265,11 @@ namespace SharpPdb.Windows.TPI
         /// Gets the hash adjusters.
         /// </summary>
         public HashTable HashAdjusters => hashAdjustersCache.Value;
+
+        /// <summary>
+        /// Gets hash table for resolving forward references.
+        /// </summary>
+        public TypeIndexListItem[] HashTable => hashTableCache.Value;
 
         /// <summary>
         /// Gets the number of type records in the stream.

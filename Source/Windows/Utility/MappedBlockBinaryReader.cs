@@ -8,9 +8,7 @@ namespace SharpPdb.Windows.Utility
     /// <summary>
     /// Represents <see cref="IBinaryReader"/> on top of the existing stream mapped with array of blocks of the same size.
     /// </summary>
-    /// <typeparam name="TStream">Base stream type.</typeparam>
-    internal class MappedBlockBinaryReader<TStream> : IBinaryReader
-        where TStream : IBinaryReader
+    internal class MappedBlockBinaryReader : IBinaryReader
     {
         /// <summary>
         /// Current position in the stream.
@@ -28,17 +26,17 @@ namespace SharpPdb.Windows.Utility
         private uint blockRemaining;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MappedBlockBinaryReader{TStream}"/> class.
+        /// Initializes a new instance of the <see cref="MappedBlockBinaryReader"/> class.
         /// </summary>
         /// <param name="blocks">Array of block indexes in the parent stream.</param>
         /// <param name="blockSize">Single block size in bytes.</param>
         /// <param name="length">Length of this stream in bytes.</param>
         /// <param name="baseReader">Base stream binary reader.</param>
-        public MappedBlockBinaryReader(uint[] blocks, uint blockSize, long length, TStream baseReader)
+        public MappedBlockBinaryReader(uint[] blocks, uint blockSize, long length, IBinaryReader baseReader)
         {
             Blocks = blocks;
             BlockSize = blockSize;
-            BaseReader = (TStream)baseReader.Duplicate();
+            BaseReader = baseReader.Duplicate();
             Length = length;
             Position = 0;
         }
@@ -56,7 +54,7 @@ namespace SharpPdb.Windows.Utility
         /// <summary>
         /// Gets the base stream binary reader.
         /// </summary>
-        public TStream BaseReader { get; private set; }
+        public IBinaryReader BaseReader { get; private set; }
 
         /// <summary>
         /// Gets the length of the stream in bytes.
@@ -110,7 +108,7 @@ namespace SharpPdb.Windows.Utility
         /// </summary>
         public IBinaryReader Duplicate()
         {
-            return new MappedBlockBinaryReader<TStream>(Blocks, BlockSize, Length, BaseReader)
+            return new MappedBlockBinaryReader(Blocks, BlockSize, Length, BaseReader)
             {
                 Position = Position,
             };

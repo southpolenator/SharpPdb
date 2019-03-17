@@ -44,7 +44,10 @@ namespace SharpPdb.Managed.Windows
                 if (PdbFile.Reader.InfoStream.NamedStreamMap.Streams.TryGetValue("/src/files/" + Name, out guidStreamIndex)
                     || PdbFile.Reader.InfoStream.NamedStreamMap.StreamsUppercase.TryGetValue("/SRC/FILES/" + Name.ToUpperInvariant(), out guidStreamIndex))
                 {
-                    return new GuidStream(PdbFile.Reader.Streams[guidStreamIndex]);
+                    PdbStream guidStream = PdbFile.Reader.GetStream(guidStreamIndex);
+
+                    if (guidStream != null)
+                        return new GuidStream(guidStream);
                 }
                 return null;
             });
