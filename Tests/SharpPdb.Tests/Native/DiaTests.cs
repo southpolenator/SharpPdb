@@ -12,13 +12,16 @@ namespace SharpPdb.Native.Tests
 {
     public class DiaTests : TestBase
     {
-        [Fact]
-        public void Test1()
+        [Theory]
+        [InlineData(1)]
+        [InlineData(5)]
+        [InlineData(6)]
+        public void TestPdb(int pdbIndex)
         {
             if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
                 return;
 
-            string pdbPath = GetPdbPath(1);
+            string pdbPath = GetPdbPath(pdbIndex);
             IDiaDataSource dia = DiaLoader.CreateDiaSource();
             IDiaSession diaSession;
 
