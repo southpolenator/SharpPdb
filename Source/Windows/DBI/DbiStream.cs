@@ -30,14 +30,14 @@ namespace SharpPdb.Windows.DBI
         private SimpleCacheStruct<SectionContributionEntry2[]> sectionContributions2Cache;
 
         /// <summary>
-        /// Cache for section header stream.
-        /// </summary>
-        private SimpleCacheStruct<IBinaryReader> sectionHeaderStreamCache;
-
-        /// <summary>
-        /// Cache for section headers.
+        /// Cache for <see cref="SectionHeaders"/> property.
         /// </summary>
         private SimpleCacheStruct<CoffSectionHeader[]> sectionHeadersCache;
+
+        /// <summary>
+        /// Cache for <see cref="OriginalSectionHeaders"/> property.
+        /// </summary>
+        private SimpleCacheStruct<CoffSectionHeader[]> originalSectionHeadersCache;
 
         /// <summary>
         /// Cache for section map.
@@ -53,6 +53,16 @@ namespace SharpPdb.Windows.DBI
         /// Cache for FPO records.
         /// </summary>
         private SimpleCacheStruct<FpoData[]> fpoRecordsCache;
+
+        /// <summary>
+        /// Cache for <see cref="OmapToSourceEntries"/> property.
+        /// </summary>
+        private SimpleCacheStruct<OmapEntry[]> omapToSourceEntriesCache;
+
+        /// <summary>
+        /// Cache for <see cref="OmapFromSourceEntries"/> property.
+        /// </summary>
+        private SimpleCacheStruct<OmapEntry[]> omapFromSourceEntriesCache;
 
         /// <summary>
         /// Cache for EC names string table.
@@ -174,24 +184,26 @@ namespace SharpPdb.Windows.DBI
                 return result;
             });
 
-            sectionHeaderStreamCache = SimpleCache.CreateStruct(() => GetKnownDebugStream(KnownDebugStreamIndex.SectionHdr)?.Reader);
-            sectionHeadersCache = SimpleCache.CreateStruct(() =>
+            CoffSectionHeader[] ReadSectionHeadersStream(IBinaryReader sectionHeaderStream)
             {
-                if (SectionHeaderStream != null)
+                if (sectionHeaderStream != null)
                 {
-                    SectionHeaderStream.Position = 0;
-                    if (SectionHeaderStream.Length % CoffSectionHeader.Size != 0)
+                    sectionHeaderStream.Position = 0;
+                    if (sectionHeaderStream.Length % CoffSectionHeader.Size != 0)
                         throw new Exception("Corrupted section header stream.");
 
-                    int numSections = (int)(SectionHeaderStream.Length / CoffSectionHeader.Size);
+                    int numSections = (int)(sectionHeaderStream.Length / CoffSectionHeader.Size);
                     CoffSectionHeader[] sectionHeaders = new CoffSectionHeader[numSections];
 
                     for (int i = 0; i < numSections; i++)
-                        sectionHeaders[i] = CoffSectionHeader.Read(SectionHeaderStream);
+                        sectionHeaders[i] = CoffSectionHeader.Read(sectionHeaderStream);
                     return sectionHeaders;
                 }
                 return null;
-            });
+            };
+
+            sectionHeadersCache = SimpleCache.CreateStruct(() => ReadSectionHeadersStream(GetKnownDebugStream(KnownDebugStreamIndex.SectionHdr)?.Reader));
+            originalSectionHeadersCache = SimpleCache.CreateStruct(() => ReadSectionHeadersStream(GetKnownDebugStream(KnownDebugStreamIndex.SectionHdrOrig)?.Reader));
             sectionMapCache = SimpleCache.CreateStruct(() =>
             {
                 if (SectionMapSubstream.Length > 0)
@@ -225,6 +237,26 @@ namespace SharpPdb.Windows.DBI
                 }
                 return null;
             });
+            OmapEntry[] LoadOmapStream(IBinaryReader omapReader)
+            {
+                if (omapReader != null)
+                {
+                    omapReader.Position = 0;
+                    if (omapReader.Length % OmapEntry.Size != 0)
+                        throw new Exception("Corrupted Omap stream.");
+
+                    int count = (int)(omapReader.Length / OmapEntry.Size);
+                    OmapEntry[] entries = new OmapEntry[count];
+
+                    for (int i = 0; i < count; i++)
+                        entries[i] = OmapEntry.Read(omapReader);
+                    return entries;
+                }
+                return null;
+            };
+
+            omapToSourceEntriesCache = SimpleCache.CreateStruct(() => LoadOmapStream(GetKnownDebugStream(KnownDebugStreamIndex.OmapToSrc)?.Reader));
+            omapFromSourceEntriesCache = SimpleCache.CreateStruct(() => LoadOmapStream(GetKnownDebugStream(KnownDebugStreamIndex.OmapFromSrc)?.Reader));
             ecNamesCache = SimpleCache.CreateStruct(() => ECSubstream.Length > 0 ? new PdbStringTable(ECSubstream) : null);
         }
 
@@ -300,14 +332,14 @@ namespace SharpPdb.Windows.DBI
         public SectionContributionEntry2[] SectionContributions2 => sectionContributions2Cache.Value;
 
         /// <summary>
-        /// Gets the section header stream.
-        /// </summary>
-        public IBinaryReader SectionHeaderStream => sectionHeaderStreamCache.Value;
-
-        /// <summary>
         /// Gets the COFF section headers.
         /// </summary>
         public CoffSectionHeader[] SectionHeaders => sectionHeadersCache.Value;
+
+        /// <summary>
+        /// Gets the original COFF section headers.
+        /// </summary>
+        public CoffSectionHeader[] OriginalSectionHeaders => originalSectionHeadersCache.Value;
 
         /// <summary>
         /// Gets the section map.
@@ -323,6 +355,16 @@ namespace SharpPdb.Windows.DBI
         /// Gets the FPO records.
         /// </summary>
         public FpoData[] FpoRecords => fpoRecordsCache.Value;
+
+        /// <summary>
+        /// Parsed entries of the <see cref="KnownDebugStreamIndex.OmapToSrc"/> stream.
+        /// </summary>
+        public OmapEntry[] OmapToSourceEntries => omapToSourceEntriesCache.Value;
+
+        /// <summary>
+        /// Parsed entries of the <see cref="KnownDebugStreamIndex.OmapFromSrc"/> stream.
+        /// </summary>
+        public OmapEntry[] OmapFromSourceEntries => omapFromSourceEntriesCache.Value;
 
         /// <summary>
         /// Gets the EC names string table.

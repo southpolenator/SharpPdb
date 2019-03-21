@@ -249,6 +249,22 @@ namespace SharpPdb.Windows
         internal IBinaryReader Reader { get; private set; }
 
         /// <summary>
+        /// Resolves relative virtual address for the specified segment and offset.
+        /// Relative virtual address is offset from module load address.
+        /// </summary>
+        /// <param name="segment">Section where symbol is located.</param>
+        /// <param name="offset">Offset within the section.</param>
+        public ulong FindRelativeVirtualAddress(ushort segment, uint offset)
+        {
+            var dbi = DbiStream;
+            var sections = dbi?.SectionHeaders;
+
+            if (sections == null || segment == 0 || segment > sections.Length)
+                return 0;
+            return sections[segment - 1].VirtualAddress + offset;
+        }
+
+        /// <summary>
         /// Safely gets the PDB stream from <see cref="Streams"/>. It will return <c>null</c> if index is outside of the range.
         /// </summary>
         /// <param name="streamIndex">Index in the <see cref="Streams"/> list.</param>

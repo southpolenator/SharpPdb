@@ -144,6 +144,7 @@ namespace SharpPdb.Native.Tests
                     {
                         Assert.Equal(diaStaticFields[i].addressSection, regularStaticField.Segment);
                         Assert.Equal(diaStaticFields[i].addressOffset, regularStaticField.Offset);
+                        Assert.Equal(diaStaticFields[i].relativeVirtualAddress, regularStaticField.RelativeVirtualAddress);
                     }
                     CompareTypes(diaStaticFields[i].type, pdbStaticFields[i].Type, checkedTypes);
                 }

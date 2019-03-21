@@ -36,5 +36,10 @@ namespace SharpPdb.Native
         /// Gets the segment portion of symbol address.
         /// </summary>
         public ushort Segment => Data.Segment;
+
+        /// <summary>
+        /// Gets the relative virtual address of this static field from module load address.
+        /// </summary>
+        public ulong RelativeVirtualAddress => ContainerType.Pdb.PdbFile.FindRelativeVirtualAddress(Segment, Offset);
     }
 }
