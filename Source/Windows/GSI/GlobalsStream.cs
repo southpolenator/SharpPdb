@@ -18,17 +18,17 @@ namespace SharpPdb.Windows.GSI
         /// <summary>
         /// Cache for <see cref="Constants"/> property.
         /// </summary>
-        private SimpleCacheStruct<Dictionary<string, ConstantSymbol>> constantsCache;
+        private SimpleCacheStruct<List<ConstantSymbol>> constantsCache;
 
         /// <summary>
         /// Cache for <see cref="Data"/> property.
         /// </summary>
-        private SimpleCacheStruct<Dictionary<string, DataSymbol>> dataCache;
+        private SimpleCacheStruct<List<DataSymbol>> dataCache;
 
         /// <summary>
         /// Cache for <see cref="ThreadLocalData"/> property.
         /// </summary>
-        private SimpleCacheStruct<Dictionary<string, ThreadLocalDataSymbol>> threadLocalDataCache;
+        private SimpleCacheStruct<List<ThreadLocalDataSymbol>> threadLocalDataCache;
 
         /// <summary>
         /// Initializes the <see cref="GlobalsStream"/> class.
@@ -121,37 +121,37 @@ namespace SharpPdb.Windows.GSI
             Symbols = new ArrayCache<SymbolRecord>(HashRecords.Length, index => Stream.File.PdbSymbolStream.GetSymbolRecordByOffset(HashRecords[index].Offset - 1));
             constantsCache = SimpleCache.CreateStruct(() =>
             {
-                Dictionary<string, ConstantSymbol> constants = new Dictionary<string, ConstantSymbol>();
+                List<ConstantSymbol> constants = new List<ConstantSymbol>();
                 for (int i = 0; i < Symbols.Count; i++)
                 {
                     ConstantSymbol constant = Symbols[i] as ConstantSymbol;
 
                     if (constant != null)
-                        constants.Add(constant.Name, constant);
+                        constants.Add(constant);
                 }
                 return constants;
             });
             threadLocalDataCache = SimpleCache.CreateStruct(() =>
             {
-                Dictionary<string, ThreadLocalDataSymbol> threadLocalData = new Dictionary<string, ThreadLocalDataSymbol>();
+                List<ThreadLocalDataSymbol> threadLocalData = new List<ThreadLocalDataSymbol>();
                 for (int i = 0; i < Symbols.Count; i++)
                 {
                     ThreadLocalDataSymbol tls = Symbols[i] as ThreadLocalDataSymbol;
 
                     if (tls != null)
-                        threadLocalData.Add(tls.Name, tls);
+                        threadLocalData.Add(tls);
                 }
                 return threadLocalData;
             });
             dataCache = SimpleCache.CreateStruct(() =>
             {
-                Dictionary<string, DataSymbol> data = new Dictionary<string, DataSymbol>();
+                List<DataSymbol> data = new List<DataSymbol>();
                 for (int i = 0; i < Symbols.Count; i++)
                 {
                     DataSymbol d = Symbols[i] as DataSymbol;
 
                     if (d != null)
-                        data.Add(d.Name, d);
+                        data.Add(d);
                 }
                 return data;
             });
@@ -180,17 +180,17 @@ namespace SharpPdb.Windows.GSI
         /// <summary>
         /// Gets the dictionary of all constants in symbols by name.
         /// </summary>
-        public Dictionary<string, ConstantSymbol> Constants => constantsCache.Value;
+        public IReadOnlyList<ConstantSymbol> Constants => constantsCache.Value;
 
         /// <summary>
         /// Gets the dictionary of all data in symbols by name.
         /// </summary>
-        public Dictionary<string, DataSymbol> Data => dataCache.Value;
+        public IReadOnlyList<DataSymbol> Data => dataCache.Value;
 
         /// <summary>
         /// Gets the dictionary of all TLS data in symbols by name.
         /// </summary>
-        public Dictionary<string, ThreadLocalDataSymbol> ThreadLocalData => threadLocalDataCache.Value;
+        public IReadOnlyList<ThreadLocalDataSymbol> ThreadLocalData => threadLocalDataCache.Value;
 
         /// <summary>
         /// Gets the hash buckets.

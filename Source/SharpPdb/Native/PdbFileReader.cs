@@ -24,6 +24,11 @@ namespace SharpPdb.Native
         private SimpleCacheStruct<IReadOnlyList<PdbType>> userDefinedTypesCache;
 
         /// <summary>
+        /// Cache for <see cref="GlobalVariables"/> property.
+        /// </summary>
+        private SimpleCacheStruct<PdbGlobalVariable[]> globalVarablesCache;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PdbFileReader"/> class.
         /// </summary>
         /// <param name="pdbPath">Path to PDB file.</param>
@@ -83,6 +88,15 @@ namespace SharpPdb.Native
                     }
                 return (IReadOnlyList<PdbType>)types;
             });
+            globalVarablesCache = SimpleCache.CreateStruct(() =>
+            {
+                var data = PdbFile.GlobalsStream.Data;
+                PdbGlobalVariable[] globalVariables = new PdbGlobalVariable[data.Count];
+
+                for (int i = 0; i < data.Count; i++)
+                    globalVariables[i] = new PdbGlobalVariable(this, data[i]);
+                return globalVariables;
+            });
         }
 
         /// <summary>
@@ -94,6 +108,11 @@ namespace SharpPdb.Native
         /// Gets the user defined types from PDB file.
         /// </summary>
         public IReadOnlyList<PdbType> UserDefinedTypes => userDefinedTypesCache.Value;
+
+        /// <summary>
+        /// Gets the global variables from PDB file.
+        /// </summary>
+        public PdbGlobalVariable[] GlobalVariables => globalVarablesCache.Value;
 
         /// <summary>
         /// Gets the <see cref="PdbType"/> at the specified index.

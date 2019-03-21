@@ -57,6 +57,22 @@ namespace SharpPdb.Native.Tests
                         checkedUdts.Add(name);
                     }
                 }
+
+                // Verify global variables
+                IDiaSymbol[] diaGlobalVariables = diaSession.globalScope.GetChildren(SymTagEnum.Data).Where(s => s.locationType == LocationType.Static).ToArray();
+
+                Assert.Equal(diaGlobalVariables.Length, pdb.GlobalVariables.Length);
+                for (int i = 0; i < diaGlobalVariables.Length; i++)
+                {
+                    IDiaSymbol diaGlobalVariable = diaGlobalVariables[i];
+                    PdbGlobalVariable pdbGlobalVariable = pdb.GlobalVariables[i];
+
+                    Assert.Equal(diaGlobalVariable.name, pdbGlobalVariable.Name);
+                    Assert.Equal(diaGlobalVariable.addressSection, pdbGlobalVariable.Segment);
+                    Assert.Equal(diaGlobalVariable.addressOffset, pdbGlobalVariable.Offset);
+                    Assert.Equal(diaGlobalVariable.relativeVirtualAddress, pdbGlobalVariable.RelativeVirtualAddress);
+                    CompareTypes(diaGlobalVariable.type, pdbGlobalVariable.Type, checkedTypes);
+                }
             }
         }
 

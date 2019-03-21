@@ -3,6 +3,7 @@ using SharpPdb.Windows.SymbolRecords;
 using SharpPdb.Windows.TypeRecords;
 using SharpUtilities;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SharpPdb.Native.Types
 {
@@ -175,9 +176,16 @@ namespace SharpPdb.Native.Types
                             // TODO: bucket items are ordered by byte value. Is it comparable by string.CompareTo?
                         }
                     }
-                    else if (!Pdb.PdbFile.GlobalsStream.Data.TryGetValue(fullName, out data)
-                        || !Pdb.PdbFile.GlobalsStream.Constants.TryGetValue(fullName, out constant))
-                        Pdb.PdbFile.GlobalsStream.ThreadLocalData.TryGetValue(fullName, out threadLocalData);
+                    else
+                    {
+                        data = Pdb.PdbFile.GlobalsStream.Data.FirstOrDefault(d => d.Name == fullName);
+                        if (data == null)
+                        {
+                            constant = Pdb.PdbFile.GlobalsStream.Constants.FirstOrDefault(c => c.Name == fullName);
+                            if (constant == null)
+                                threadLocalData = Pdb.PdbFile.GlobalsStream.ThreadLocalData.FirstOrDefault(t => t.Name == fullName);
+                        }
+                    }
 
                     // Create correct static field type
                     if (constant != null)
