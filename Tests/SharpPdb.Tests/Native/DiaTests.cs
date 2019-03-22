@@ -118,6 +118,7 @@ namespace SharpPdb.Native.Tests
                         Assert.Equal(diaFields[i].bitPosition, bitField.BitOffset);
                         Assert.Equal(diaFields[i].length, bitField.BitSize);
                     }
+                    Assert.Equal(diaFields[i].access, (uint)pdbFields[i].Access);
                     Assert.Equal(diaFields[i].name, pdbFields[i].Name);
                     Assert.Equal((ulong)diaFields[i].offset, pdbFields[i].Offset);
                     CompareTypes(diaFields[i].type, pdbFields[i].Type, checkedTypes);
@@ -130,6 +131,7 @@ namespace SharpPdb.Native.Tests
                 Assert.Equal(diaConstants.Length, pdbConstants.Length);
                 for (int i = 0; i < pdbConstants.Length; i++)
                 {
+                    Assert.Equal(diaConstants[i].access, (uint)pdbConstants[i].Access);
                     Assert.Equal(diaConstants[i].name, pdbConstants[i].Name);
                     Assert.Equal(diaConstants[i].value.ToString(), pdbConstants[i].Value.ToString());
                     CompareTypes(diaConstants[i].type, pdbConstants[i].Type, checkedTypes);
@@ -142,6 +144,7 @@ namespace SharpPdb.Native.Tests
                 Assert.Equal(diaTls.Length, pdbTls.Length);
                 for (int i = 0; i < pdbTls.Length; i++)
                 {
+                    Assert.Equal(diaTls[i].access, (uint)pdbTls[i].Access);
                     Assert.Equal(diaTls[i].name, pdbTls[i].Name);
                     Assert.Equal(diaTls[i].addressSection, pdbTls[i].Segment);
                     Assert.Equal(diaTls[i].addressOffset, pdbTls[i].Offset);
@@ -155,6 +158,7 @@ namespace SharpPdb.Native.Tests
                 Assert.Equal(diaStaticFields.Length, pdbStaticFields.Length);
                 for (int i = 0; i < pdbStaticFields.Length; i++)
                 {
+                    Assert.Equal(diaStaticFields[i].access, (uint)pdbStaticFields[i].Access);
                     Assert.Equal(diaStaticFields[i].name, pdbStaticFields[i].Name);
                     if (pdbStaticFields[i] is PdbTypeRegularStaticField regularStaticField)
                     {
@@ -163,6 +167,31 @@ namespace SharpPdb.Native.Tests
                         Assert.Equal(diaStaticFields[i].relativeVirtualAddress, regularStaticField.RelativeVirtualAddress);
                     }
                     CompareTypes(diaStaticFields[i].type, pdbStaticFields[i].Type, checkedTypes);
+                }
+
+                // Base classes
+                var diaAllBaseClasses = diaType.GetChildren(SymTagEnum.BaseClass).Concat(diaType.GetChildren(SymTagEnum.BaseInterface)).ToArray();
+                var diaBaseClasses = diaAllBaseClasses.Where(b => !b.virtualBaseClass).ToArray();
+
+                Assert.Equal(diaBaseClasses.Length, pdbUdt.BaseClasses.Count);
+                for (int i = 0; i < diaBaseClasses.Length; i++)
+                {
+                    Assert.Equal(diaBaseClasses[i].access, (uint)pdbUdt.BaseClasses[i].Access);
+                    Assert.Equal(diaBaseClasses[i].offset, (int)pdbUdt.BaseClasses[i].Offset);
+                    CompareTypes(diaBaseClasses[i].type, pdbUdt.BaseClasses[i].BaseType, checkedTypes);
+                }
+
+                // Virtual base classes
+                var diaVirtualBaseClasses = diaAllBaseClasses.Where(b => b.virtualBaseClass).ToArray();
+
+                Assert.Equal(diaVirtualBaseClasses.Length, pdbUdt.VirtualBaseClasses.Count);
+                for (int i = 0; i < diaVirtualBaseClasses.Length; i++)
+                {
+                    Assert.Equal(diaVirtualBaseClasses[i].access, (uint)pdbUdt.VirtualBaseClasses[i].Access);
+                    Assert.Equal(diaVirtualBaseClasses[i].virtualBaseDispIndex, (uint)pdbUdt.VirtualBaseClasses[i].VirtualTableIndex);
+                    Assert.Equal(diaVirtualBaseClasses[i].virtualBasePointerOffset, (int)pdbUdt.VirtualBaseClasses[i].VirtualBasePointerOffset);
+                    CompareTypes(diaVirtualBaseClasses[i].type, pdbUdt.VirtualBaseClasses[i].BaseType, checkedTypes);
+                    CompareTypes(diaVirtualBaseClasses[i].virtualBaseTableType, pdbUdt.VirtualBaseClasses[i].VirtualBasePointerType, checkedTypes);
                 }
             }
             else if (diaType.symTag == SymTagEnum.Enum)

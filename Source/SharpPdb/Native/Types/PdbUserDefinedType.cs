@@ -15,12 +15,22 @@ namespace SharpPdb.Native.Types
         /// <summary>
         /// Cache for <see cref="Fields"/> property.
         /// </summary>
-        private SimpleCacheStruct<IReadOnlyList<PdbTypeField>> fieldsCache;
+        private SimpleCacheStruct<List<PdbTypeField>> fieldsCache;
 
         /// <summary>
         /// Cache for <see cref="StaticFields"/> property.
         /// </summary>
-        private SimpleCacheStruct<IReadOnlyList<PdbTypeStaticField>> staticFieldsCache;
+        private SimpleCacheStruct<List<PdbTypeStaticField>> staticFieldsCache;
+
+        /// <summary>
+        /// Cache for <see cref="BaseClasses"/> property.
+        /// </summary>
+        private SimpleCacheStruct<List<PdbTypeBaseClass>> baseClassesCache;
+
+        /// <summary>
+        /// Cache for <see cref="VirtualBaseClasses"/> property.
+        /// </summary>
+        private SimpleCacheStruct<List<PdbTypeVirtualBaseClass>> virtualBaseClassesCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PdbType"/> class.
@@ -36,6 +46,37 @@ namespace SharpPdb.Native.Types
             TagRecord = tagRecord;
             fieldsCache = SimpleCache.CreateStruct(EnumerateFields);
             staticFieldsCache = SimpleCache.CreateStruct(EnumerateStaticFields);
+            baseClassesCache = SimpleCache.CreateStruct(() =>
+            {
+                List<PdbTypeBaseClass> baseClasses = new List<PdbTypeBaseClass>();
+
+                foreach (TypeRecord field in EnumerateFieldList())
+                    if (field is BaseClassRecord baseClassRecord)
+                        baseClasses.Add(new PdbTypeBaseClass
+                        {
+                            Access = baseClassRecord.Attributes.Access,
+                            Offset = baseClassRecord.Offset,
+                            BaseType = Pdb[baseClassRecord.Type],
+                        });
+                return baseClasses;
+            });
+            virtualBaseClassesCache = SimpleCache.CreateStruct(() =>
+            {
+                List<PdbTypeVirtualBaseClass> virtualBaseClasses = new List<PdbTypeVirtualBaseClass>();
+
+                foreach (TypeRecord field in EnumerateFieldList())
+                    if (field is VirtualBaseClassRecord virtualBaseClassRecord)
+                        virtualBaseClasses.Add(new PdbTypeVirtualBaseClass
+                        {
+                            Access = virtualBaseClassRecord.Attributes.Access,
+                            BaseType = Pdb[virtualBaseClassRecord.BaseType],
+                            VirtualBasePointerType = Pdb[virtualBaseClassRecord.VirtualBasePointerType],
+                            IsDirect = virtualBaseClassRecord.Kind == TypeLeafKind.LF_VBCLASS,
+                            VirtualBasePointerOffset = virtualBaseClassRecord.VirtualBasePointerOffset,
+                            VirtualTableIndex = virtualBaseClassRecord.VirtualTableIndex,
+                        });
+                return virtualBaseClasses;
+            });
         }
 
         /// <summary>
@@ -57,6 +98,16 @@ namespace SharpPdb.Native.Types
         /// Gets the all static fields from this type.
         /// </summary>
         public IReadOnlyList<PdbTypeStaticField> StaticFields => staticFieldsCache.Value;
+
+        /// <summary>
+        /// Gets the all direct base classes of this user defined type.
+        /// </summary>
+        public IReadOnlyList<PdbTypeBaseClass> BaseClasses => baseClassesCache.Value;
+
+        /// <summary>
+        /// Gets the all direct virtual base classes of this user defined type.
+        /// </summary>
+        public IReadOnlyList<PdbTypeVirtualBaseClass> VirtualBaseClasses => virtualBaseClassesCache.Value;
 
         /// <summary>
         /// <c>true</c> if <see cref="TagRecord"/>.<see cref="TagRecord.Options"/> contain <see cref="ClassOptions.Nested"/>.
@@ -104,7 +155,7 @@ namespace SharpPdb.Native.Types
         /// <summary>
         /// Creates a list of fields based on <see cref="TagRecord"/>.<see cref="TagRecord.FieldList"/>.
         /// </summary>
-        private IReadOnlyList<PdbTypeField> EnumerateFields()
+        private List<PdbTypeField> EnumerateFields()
         {
             List<PdbTypeField> fields = new List<PdbTypeField>();
 
@@ -134,7 +185,7 @@ namespace SharpPdb.Native.Types
         /// <summary>
         /// Creates a list of static fields based on <see cref="TagRecord"/>.<see cref="TagRecord.FieldList"/>.
         /// </summary>
-        private IReadOnlyList<PdbTypeStaticField> EnumerateStaticFields()
+        private List<PdbTypeStaticField> EnumerateStaticFields()
         {
             List<PdbTypeStaticField> fields = new List<PdbTypeStaticField>();
 
