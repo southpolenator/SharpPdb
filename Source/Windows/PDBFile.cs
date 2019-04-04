@@ -44,6 +44,11 @@ namespace SharpPdb.Windows
         private SimpleCacheStruct<GlobalsStream> globalsStreamCache;
 
         /// <summary>
+        /// Cache for <see cref="PublicsStream"/>.
+        /// </summary>
+        private SimpleCacheStruct<PublicsStream> publicsStreamCache;
+
+        /// <summary>
         /// Cache for <see cref="TpiStream"/>.
         /// </summary>
         private SimpleCacheStruct<TpiStream> tpiStreamCache;
@@ -186,6 +191,14 @@ namespace SharpPdb.Windows
                     return new GlobalsStream(stream);
                 return null;
             });
+            publicsStreamCache = SimpleCache.CreateStruct(() =>
+            {
+                PdbStream stream = GetStream(DbiStream.Header.PublicSymbolStreamIndex);
+
+                if (stream != null)
+                    return new PublicsStream(this, stream.Reader);
+                return null;
+            });
         }
 
         /// <summary>
@@ -222,6 +235,11 @@ namespace SharpPdb.Windows
         /// Gets parsed globals stream.
         /// </summary>
         public GlobalsStream GlobalsStream => globalsStreamCache.Value;
+
+        /// <summary>
+        /// Gets parsed publics stream.
+        /// </summary>
+        public PublicsStream PublicsStream => publicsStreamCache.Value;
 
         /// <summary>
         /// Gets parsed TPI stream.

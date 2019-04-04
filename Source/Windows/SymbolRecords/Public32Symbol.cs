@@ -16,7 +16,7 @@ namespace SharpPdb.Windows.SymbolRecords
         };
 
         /// <summary>
-        /// Gets publi symbol flags.
+        /// Gets public symbol flags.
         /// </summary>
         public PublicSymbolFlags Flags { get; private set; }
 

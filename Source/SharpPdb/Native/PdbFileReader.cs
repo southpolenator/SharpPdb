@@ -29,6 +29,11 @@ namespace SharpPdb.Native
         private SimpleCacheStruct<PdbGlobalVariable[]> globalVarablesCache;
 
         /// <summary>
+        /// Cache for <see cref="PublicSymbols"/> property.
+        /// </summary>
+        private SimpleCacheStruct<PdbPublicSymbol[]> publicSymbolsCache;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PdbFileReader"/> class.
         /// </summary>
         /// <param name="pdbPath">Path to PDB file.</param>
@@ -97,6 +102,14 @@ namespace SharpPdb.Native
                     globalVariables[i] = new PdbGlobalVariable(this, data[i]);
                 return globalVariables;
             });
+            publicSymbolsCache = SimpleCache.CreateStruct(() =>
+            {
+                PdbPublicSymbol[] publicSymbols = new PdbPublicSymbol[PdbFile.PublicsStream.PublicSymbols.Count];
+
+                for (int i = 0; i < publicSymbols.Length; i++)
+                    publicSymbols[i] = new PdbPublicSymbol(this, PdbFile.PublicsStream.PublicSymbols[i]);
+                return publicSymbols;
+            });
         }
 
         /// <summary>
@@ -113,6 +126,11 @@ namespace SharpPdb.Native
         /// Gets the global variables from PDB file.
         /// </summary>
         public PdbGlobalVariable[] GlobalVariables => globalVarablesCache.Value;
+
+        /// <summary>
+        /// Gets the public symbols from PDB file.
+        /// </summary>
+        public PdbPublicSymbol[] PublicSymbols => publicSymbolsCache.Value;
 
         /// <summary>
         /// Gets the <see cref="PdbType"/> at the specified index.

@@ -52,11 +52,21 @@ namespace SharpPdb.Windows.GSI
         /// </summary>
         /// <param name="stream">PDB stream that contains globals stream.</param>
         public GlobalsStream(PdbStream stream)
+            : this(stream.File, stream.Reader)
         {
-            Stream = stream;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GlobalsStream"/> class.
+        /// </summary>
+        /// <param name="file">PDB file containing this stream.</param>
+        /// <param name="reader">Binary stream reader.</param>
+        public GlobalsStream(PdbFile file, IBinaryReader reader)
+        {
+            File = file;
 
             // Read header
-            Header = GlobalsStreamHeader.Read(stream.Reader);
+            Header = GlobalsStreamHeader.Read(reader);
             if (Header.Signature != GlobalsStreamHeader.ExpectedSignature)
                 throw new Exception($"GSIHashHeader signature (0x{GlobalsStreamHeader.ExpectedSignature:X}) not found.");
             if (Header.Version != GlobalsStreamHeader.ExpectedVersion)
@@ -65,11 +75,11 @@ namespace SharpPdb.Windows.GSI
             // Read hash records
             if (Header.HashRecordsSubstreamSize % GlobalsStreamHashRecord.Size != 0)
                 throw new Exception("Invalid hash record array size.");
-            if (stream.Reader.BytesRemaining < Header.HashRecordsSubstreamSize)
+            if (reader.BytesRemaining < Header.HashRecordsSubstreamSize)
                 throw new Exception("Error reading hash records.");
             GlobalsStreamHashRecord[] hashRecords = new GlobalsStreamHashRecord[Header.HashRecordsSubstreamSize / GlobalsStreamHashRecord.Size];
             for (int i = 0; i < hashRecords.Length; i++)
-                hashRecords[i] = GlobalsStreamHashRecord.Read(stream.Reader);
+                hashRecords[i] = GlobalsStreamHashRecord.Read(reader);
             HashRecords = hashRecords;
 
             // Read hash buckets
@@ -79,16 +89,16 @@ namespace SharpPdb.Windows.GSI
                 const uint SizeOfHROffsetCalc = 12;
                 ulong bitmapSizeInBits = (IPHR_HASH / 32 + 1) * 32;
                 int bitmapEntriesCount = (int)(bitmapSizeInBits / 8);
-                if (stream.Reader.BytesRemaining < bitmapEntriesCount)
+                if (reader.BytesRemaining < bitmapEntriesCount)
                     throw new Exception("Could not read a bitmap.");
-                byte[] hashBitmap = stream.Reader.ReadByteArray(bitmapEntriesCount);
+                byte[] hashBitmap = reader.ReadByteArray(bitmapEntriesCount);
                 int nonEmptyBucketsCount = 0;
 
                 for (int i = 0; i < hashBitmap.Length; i++)
                     nonEmptyBucketsCount += bitCount[hashBitmap[i]];
-                if (stream.Reader.BytesRemaining < nonEmptyBucketsCount * 4) // 4 = sizeof(uint)
+                if (reader.BytesRemaining < nonEmptyBucketsCount * 4) // 4 = sizeof(uint)
                     throw new Exception("Could not read a bitmap.");
-                uint[] nonEmptyBucketOffsets = stream.Reader.ReadUintArray(nonEmptyBucketsCount);
+                uint[] nonEmptyBucketOffsets = reader.ReadUintArray(nonEmptyBucketsCount);
                 GlobalsStreamHashBucket[] hashBuckets = new GlobalsStreamHashBucket[IPHR_HASH];
 
                 for (int i = 0, j = 0; i < IPHR_HASH; i++)
@@ -118,7 +128,7 @@ namespace SharpPdb.Windows.GSI
                 HashBuckets = hashBuckets;
             }
 
-            Symbols = new ArrayCache<SymbolRecord>(HashRecords.Length, index => Stream.File.PdbSymbolStream.GetSymbolRecordByOffset(HashRecords[index].Offset - 1));
+            Symbols = new ArrayCache<SymbolRecord>(HashRecords.Length, index => File.PdbSymbolStream.GetSymbolRecordByOffset(HashRecords[index].Offset - 1));
             constantsCache = SimpleCache.CreateStruct(() =>
             {
                 List<ConstantSymbol> constants = new List<ConstantSymbol>();
@@ -158,9 +168,9 @@ namespace SharpPdb.Windows.GSI
         }
 
         /// <summary>
-        /// Gets the associated PDB stream.
+        /// Gets the PDB file containing this globals stream.
         /// </summary>
-        public PdbStream Stream { get; private set; }
+        public PdbFile File { get; private set; }
 
         /// <summary>
         /// Gets globals stream header.
