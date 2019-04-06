@@ -1,4 +1,5 @@
 ﻿using SharpUtilities;
+using System;
 using System.Collections.Generic;
 
 namespace SharpPdb.Windows.SymbolRecords
@@ -9,22 +10,37 @@ namespace SharpPdb.Windows.SymbolRecords
     public class SymbolRecord
     {
         /// <summary>
+        /// Empty array of symbol records.
+        /// </summary>
+        public static readonly SymbolRecord[] EmptySymbolRecords = new SymbolRecord[0];
+
+        /// <summary>
+        /// Delegate that calls <see cref="GetParent"/> function.
+        /// </summary>
+        private static readonly Func<SymbolRecord, SymbolRecord> getParentDelegate = (t) => t.GetParent();
+
+        /// <summary>
+        /// Delegate that calls <see cref="GetChildren"/> function.
+        /// </summary>
+        private static readonly Func<SymbolRecord, SymbolRecord[]> getChildrenDelegate = (t) => t.GetChildren();
+
+        /// <summary>
         /// Cache for <see cref="Parent"/> property.
         /// </summary>
-        private SimpleCacheStruct<SymbolRecord> parentCache;
+        private SimpleCacheWithContext<SymbolRecord, SymbolRecord> parentCache;
 
         /// <summary>
         /// Cache for <see cref="Children"/> property.
         /// </summary>
-        private SimpleCacheStruct<SymbolRecord[]> childrenCache;
+        private SimpleCacheWithContext<SymbolRecord[], SymbolRecord> childrenCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SymbolRecord"/> class.
         /// </summary>
         public SymbolRecord()
         {
-            parentCache = SimpleCache.CreateStruct(GetParent);
-            childrenCache = SimpleCache.CreateStruct(GetChildren);
+            parentCache = SimpleCache.CreateWithContext(this, getParentDelegate);
+            childrenCache = SimpleCache.CreateWithContext(this, getChildrenDelegate);
         }
 
         /// <summary>
@@ -122,7 +138,7 @@ namespace SharpPdb.Windows.SymbolRecords
             int capacity = endIndex - startIndex;
 
             if (capacity <= 0)
-                return new SymbolRecord[0];
+                return EmptySymbolRecords;
 
             List<SymbolRecord> children = new List<SymbolRecord>(capacity);
 
