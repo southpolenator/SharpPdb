@@ -117,113 +117,141 @@ namespace SharpPdb.Windows.Utility
         /// <summary>
         /// Reads <c>byte</c> from the stream.
         /// </summary>
-        public byte ReadByte()
+        public unsafe byte ReadByte()
         {
-            byte[] buffer = MoveInternal(1);
-            byte value;
-
-            if (buffer != null)
-                value = buffer[0];
+            if (blockRemaining > 1)
+            {
+                position++;
+                blockRemaining--;
+                return BaseReader.ReadByte();
+            }
             else
-                value = BaseReader.ReadByte();
-            CheckMoveReader();
-            return value;
+            {
+                byte value;
+
+                ReadBytes(&value, 1);
+                return value;
+            }
         }
 
         /// <summary>
         /// Reads <c>short</c> from the stream.
         /// </summary>
-        public short ReadShort()
+        public unsafe short ReadShort()
         {
-            byte[] buffer = MoveInternal(2);
-            short value;
-
-            if (buffer != null)
-                value = BitConverter.ToInt16(buffer, 0);
+            if (blockRemaining > 2)
+            {
+                position += 2;
+                blockRemaining -= 2;
+                return BaseReader.ReadShort();
+            }
             else
-                value = BaseReader.ReadShort();
-            CheckMoveReader();
-            return value;
+            {
+                short value;
+
+                ReadBytes((byte*)&value, 2);
+                return value;
+            }
         }
 
         /// <summary>
         /// Reads <c>ushort</c> from the stream.
         /// </summary>
-        public ushort ReadUshort()
+        public unsafe ushort ReadUshort()
         {
-            byte[] buffer = MoveInternal(2);
-            ushort value;
-
-            if (buffer != null)
-                value = BitConverter.ToUInt16(buffer, 0);
+            if (blockRemaining > 2)
+            {
+                position += 2;
+                blockRemaining -= 2;
+                return BaseReader.ReadUshort();
+            }
             else
-                value = BaseReader.ReadUshort();
-            CheckMoveReader();
-            return value;
+            {
+                ushort value;
+
+                ReadBytes((byte*)&value, 2);
+                return value;
+            }
         }
 
         /// <summary>
         /// Reads <c>int</c> from the stream.
         /// </summary>
-        public int ReadInt()
+        public unsafe int ReadInt()
         {
-            byte[] buffer = MoveInternal(4);
-            int value;
-
-            if (buffer != null)
-                value = BitConverter.ToInt32(buffer, 0);
+            if (blockRemaining > 4)
+            {
+                position += 4;
+                blockRemaining -= 4;
+                return BaseReader.ReadInt();
+            }
             else
-                value = BaseReader.ReadInt();
-            CheckMoveReader();
-            return value;
+            {
+                int value;
+
+                ReadBytes((byte*)&value, 4);
+                return value;
+            }
         }
 
         /// <summary>
         /// Reads <c>uint</c> from the stream.
         /// </summary>
-        public uint ReadUint()
+        public unsafe uint ReadUint()
         {
-            byte[] buffer = MoveInternal(4);
-            uint value;
-
-            if (buffer != null)
-                value = BitConverter.ToUInt32(buffer, 0);
+            if (blockRemaining > 4)
+            {
+                position += 4;
+                blockRemaining -= 4;
+                return BaseReader.ReadUint();
+            }
             else
-                value = BaseReader.ReadUint();
-            CheckMoveReader();
-            return value;
+            {
+                uint value;
+
+                ReadBytes((byte*)&value, 4);
+                return value;
+            }
         }
 
         /// <summary>
         /// Reads <c>long</c> from the stream.
         /// </summary>
-        public long ReadLong()
+        public unsafe long ReadLong()
         {
-            byte[] buffer = MoveInternal(8);
-            long value;
-
-            if (buffer != null)
-                value = BitConverter.ToInt64(buffer, 0);
+            if (blockRemaining > 8)
+            {
+                position += 8;
+                blockRemaining -= 8;
+                return BaseReader.ReadLong();
+            }
             else
-                value = BaseReader.ReadLong();
-            CheckMoveReader();
-            return value;
+            {
+                long value;
+
+                ReadBytes((byte*)&value, 8);
+                return value;
+            }
         }
 
         /// <summary>
         /// Reads <c>ulong</c> from the stream.
         /// </summary>
-        public ulong ReadUlong()
+        public unsafe ulong ReadUlong()
         {
-            byte[] buffer = MoveInternal(8);
-            ulong value;
-
-            if (buffer != null)
-                value = BitConverter.ToUInt64(buffer, 0);
+            if (blockRemaining > 8)
+            {
+                position += 8;
+                blockRemaining -= 8;
+                return BaseReader.ReadUlong();
+            }
             else
-                value = BaseReader.ReadUlong();
-            CheckMoveReader();
-            return value;
+            {
+                ulong value;
+
+                ReadBytes((byte*)&value, 8);
+                return value;
+            }
         }
 
         /// <summary>
@@ -332,17 +360,24 @@ namespace SharpPdb.Windows.Utility
         /// <param name="count">Number of bytes to from the stream</param>
         public unsafe void ReadBytes(byte* bytes, uint count)
         {
-            while (count > 0)
+            if (count < blockRemaining)
             {
-                uint read = count < blockRemaining ? count : blockRemaining;
-
-                BaseReader.ReadBytes(bytes, read);
-                position += read;
-                blockRemaining -= read;
-                CheckMoveReader();
-                count -= read;
-                bytes += read;
+                BaseReader.ReadBytes(bytes, count);
+                position += count;
+                blockRemaining -= count;
             }
+            else
+                while (count > 0)
+                {
+                    uint read = count < blockRemaining ? count : blockRemaining;
+
+                    BaseReader.ReadBytes(bytes, read);
+                    position += read;
+                    blockRemaining -= read;
+                    CheckMoveReader();
+                    count -= read;
+                    bytes += read;
+                }
         }
 
         /// <summary>
@@ -382,38 +417,6 @@ namespace SharpPdb.Windows.Utility
                         BaseReader.Position = Blocks[blockIndex] * (long)BlockSize;
                 }
             }
-        }
-
-        /// <summary>
-        /// Moves all internal data for the specified number of bytes. If not all bytes are available from current block,
-        /// it returns requested number of bytes read from current and folowing block.
-        /// </summary>
-        /// <param name="size">Number of bytes that will be read.</param>
-        /// <returns><c>null</c> if specified number of bytes is available in the current block; otherwise bytes that are read from the current position.</returns>
-        private byte[] MoveInternal(uint size)
-        {
-            if (blockRemaining < size)
-            {
-                // Check if blocks are consecutive
-                if (blockIndex + 1 < Blocks.Length && Blocks[blockIndex] + 1 == Blocks[blockIndex + 1])
-                {
-                    // Seek to the next block
-                    if (blockIndex + 2 == Blocks.Length)
-                        blockRemaining = (uint)(Length - position);
-                    else
-                        blockRemaining += BlockSize;
-                    blockIndex++;
-                }
-                else
-                {
-                    // We would like here to read byte buffer and read uint from it.
-                    return this.ReadByteArray((int)size);
-                }
-            }
-
-            position += size;
-            blockRemaining -= size;
-            return null;
         }
     }
 }
