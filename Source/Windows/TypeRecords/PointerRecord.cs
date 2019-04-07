@@ -35,7 +35,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Mask for getting pointer size from <see cref="Attribute"/>.
         /// </summary>
-        public const uint PointerSizeMask = 0xFF;
+        public const uint PointerSizeMask = 0x3F;
 
         /// <summary>
         /// Bit shift for getting pointer size from <see cref="Attribute"/>.
