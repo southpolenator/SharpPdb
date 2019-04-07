@@ -13,12 +13,7 @@ namespace SharpPdb.Windows
         /// <summary>
         /// List of all symbol references in this stream.
         /// </summary>
-        private List<SymbolRecordReference> references = new List<SymbolRecordReference>();
-
-        /// <summary>
-        /// Dictionary of reference indexes by position in the binary reader.
-        /// </summary>
-        private Dictionary<long, int> referenceIndexByOffset = new Dictionary<long, int>();
+        private List<SymbolRecordReference> references;
 
         /// <summary>
         /// Array cache of symbols in this symbol stream.
@@ -52,7 +47,10 @@ namespace SharpPdb.Windows
             long position = reader.Position;
             if (end < 0 || end > reader.Length)
                 end = reader.Length;
+            long bytes = end - position;
+            int estimatedCapacity = (int)(bytes / 35);
 
+            references = new List<SymbolRecordReference>(estimatedCapacity);
             while (position < end)
             {
                 RecordPrefix prefix = RecordPrefix.Read(reader);
@@ -63,7 +61,6 @@ namespace SharpPdb.Windows
                 SymbolRecordKind kind = (SymbolRecordKind)prefix.RecordKind;
                 ushort dataLen = prefix.DataLen;
 
-                referenceIndexByOffset.Add(position, references.Count);
                 references.Add(new SymbolRecordReference
                 {
                     DataOffset = (uint)position + RecordPrefix.Size,
@@ -114,9 +111,9 @@ namespace SharpPdb.Windows
         /// <returns>Symbol record at the specified position.</returns>
         public SymbolRecord GetSymbolRecordByOffset(long position)
         {
-            int index = referenceIndexByOffset[position];
-
-            return symbols[index];
+            if (TryGetSymbolRecordByOffset(position, out SymbolRecord symbolRecord))
+                return symbolRecord;
+            throw new KeyNotFoundException();
         }
 
         /// <summary>
@@ -127,7 +124,27 @@ namespace SharpPdb.Windows
         /// <returns><c>true</c> if offset points to symbol record; <c>false</c> otherwise</returns>
         public bool TryGetSymbolRecordByOffset(long position, out SymbolRecord symbolRecord)
         {
-            if (referenceIndexByOffset.TryGetValue(position, out int index))
+            int index = -1;
+            uint dataOffset = (uint)position + RecordPrefix.Size;
+
+            int min = 0, max = references.Count - 1;
+            while (min <= max)
+            {
+                int mid = min + (max - min) / 2;
+                uint value = references[mid].DataOffset;
+
+                if (value == dataOffset)
+                {
+                    index = mid;
+                    break;
+                }
+                else if (dataOffset < value)
+                    max = mid - 1;
+                else
+                    min = mid + 1;
+            }
+
+            if (index >= 0)
             {
                 symbolRecord = symbols[index];
                 return true;
