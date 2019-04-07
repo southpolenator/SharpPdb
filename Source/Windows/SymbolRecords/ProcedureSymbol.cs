@@ -75,7 +75,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the offset portion of the procedure address.
         /// </summary>
-        public uint CodeOffset { get; private set; }
+        public uint Offset { get; private set; }
 
         /// <summary>
         /// Gets the segment portion of the procedure address.
@@ -113,7 +113,7 @@ namespace SharpPdb.Windows.SymbolRecords
                 DebugStart = reader.ReadUint(),
                 DebugEnd = reader.ReadUint(),
                 FunctionType = TypeIndex.Read(reader),
-                CodeOffset = reader.ReadUint(),
+                Offset = reader.ReadUint(),
                 Segment = reader.ReadUshort(),
                 Flags = (ProcedureFlags)reader.ReadByte(),
                 Name = reader.ReadCString(),

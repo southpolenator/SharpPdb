@@ -3,56 +3,56 @@
 namespace SharpPdb.Windows.SymbolRecords
 {
     /// <summary>
-    /// Represents public 32bit symbol record.
+    /// Represents frame cookie symbol from the symbols stream.
     /// </summary>
-    public class Public32Symbol : SymbolRecord
+    public class FrameCookieSymbol : SymbolRecord
     {
         /// <summary>
         /// Array of <see cref="SymbolRecordKind"/> that this class can read.
         /// </summary>
         public static readonly SymbolRecordKind[] Kinds = new SymbolRecordKind[]
         {
-            SymbolRecordKind.S_PUB32
+            SymbolRecordKind.S_FRAMECOOKIE,
         };
 
         /// <summary>
-        /// Gets public symbol flags.
+        /// Gets the code offset.
         /// </summary>
-        public PublicSymbolFlags Flags { get; private set; }
+        public uint CodeOffset { get; private set; }
 
         /// <summary>
-        /// Gets the offset portion of symbol address.
+        /// Gets the register id.
         /// </summary>
-        public uint Offset { get; private set; }
+        public RegisterId Register { get; private set; }
 
         /// <summary>
-        /// Gets the segment portion of symbol address.
+        /// Gets the frame cookie kind.
         /// </summary>
-        public ushort Segment { get; private set; }
+        public FrameCookieKind CookieKind { get; private set; }
 
         /// <summary>
-        /// Gets the name.
+        /// Gets the flags.
         /// </summary>
-        public string Name { get; private set; }
+        public byte Flags { get; private set; }
 
         /// <summary>
-        /// Reads <see cref="Public32Symbol"/> from the stream.
+        /// Reads <see cref="FrameCookieSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
         /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
         /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static Public32Symbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
+        public static FrameCookieSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
-            return new Public32Symbol
+            return new FrameCookieSymbol
             {
                 SymbolStream = symbolStream,
                 SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
-                Flags = (PublicSymbolFlags)reader.ReadUint(),
-                Offset = reader.ReadUint(),
-                Segment = reader.ReadUshort(),
-                Name = reader.ReadCString(),
+                CodeOffset = reader.ReadUint(),
+                Register = (RegisterId)reader.ReadUshort(),
+                CookieKind = (FrameCookieKind)reader.ReadByte(),
+                Flags = reader.ReadByte(),
             };
         }
     }

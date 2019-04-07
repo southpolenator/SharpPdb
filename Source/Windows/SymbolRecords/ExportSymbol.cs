@@ -3,55 +3,49 @@
 namespace SharpPdb.Windows.SymbolRecords
 {
     /// <summary>
-    /// Represents public 32bit symbol record.
+    /// Represents export symbol record.
     /// </summary>
-    public class Public32Symbol : SymbolRecord
+    public class ExportSymbol : SymbolRecord
     {
         /// <summary>
         /// Array of <see cref="SymbolRecordKind"/> that this class can read.
         /// </summary>
         public static readonly SymbolRecordKind[] Kinds = new SymbolRecordKind[]
         {
-            SymbolRecordKind.S_PUB32
+            SymbolRecordKind.S_EXPORT
         };
 
         /// <summary>
-        /// Gets public symbol flags.
+        /// Gets the ordinal.
         /// </summary>
-        public PublicSymbolFlags Flags { get; private set; }
+        public ushort Ordinal { get; private set; }
 
         /// <summary>
-        /// Gets the offset portion of symbol address.
+        /// Gets the export symbol flags.
         /// </summary>
-        public uint Offset { get; private set; }
+        public ExportFlags Flags { get; private set; }
 
         /// <summary>
-        /// Gets the segment portion of symbol address.
-        /// </summary>
-        public ushort Segment { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
+        /// Gets the export symbol name.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
-        /// Reads <see cref="Public32Symbol"/> from the stream.
+        /// Reads <see cref="ExportSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
         /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
         /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static Public32Symbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
+        public static ExportSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
-            return new Public32Symbol
+            return new ExportSymbol
             {
                 SymbolStream = symbolStream,
                 SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
-                Flags = (PublicSymbolFlags)reader.ReadUint(),
-                Offset = reader.ReadUint(),
-                Segment = reader.ReadUshort(),
+                Ordinal = reader.ReadUshort(),
+                Flags = (ExportFlags)reader.ReadUshort(),
                 Name = reader.ReadCString(),
             };
         }

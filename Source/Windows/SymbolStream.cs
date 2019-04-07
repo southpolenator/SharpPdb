@@ -120,6 +120,23 @@ namespace SharpPdb.Windows
         }
 
         /// <summary>
+        /// Tries to get symbol record by offset in the binary reder stream.
+        /// </summary>
+        /// <param name="position">Position in the binary reader.</param>
+        /// <param name="symbolRecord">Symbol record at the specified position.</param>
+        /// <returns><c>true</c> if offset points to symbol record; <c>false</c> otherwise</returns>
+        public bool TryGetSymbolRecordByOffset(long position, out SymbolRecord symbolRecord)
+        {
+            if (referenceIndexByOffset.TryGetValue(position, out int index))
+            {
+                symbolRecord = symbols[index];
+                return true;
+            }
+            symbolRecord = null;
+            return false;
+        }
+
+        /// <summary>
         /// Parses all symbols of the specified symbol record kind.
         /// </summary>
         /// <param name="kind">Symbol record kind.</param>
@@ -191,9 +208,63 @@ namespace SharpPdb.Windows
                 case SymbolRecordKind.S_MANSLOT:
                     return AttributeSlotSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_END:
+                case SymbolRecordKind.S_INLINESITE_END:
                     return EndSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_ANNOTATION:
+                    return AnnotationSymbol.Read(Reader, this, index, reference.Kind);
                 case SymbolRecordKind.S_ANNOTATIONREF:
                     return AnnotationReferenceSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_REGREL32:
+                    return RegisterRelativeSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_OBJNAME:
+                    return ObjectNameSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_COMPILE2:
+                    return Compile2Symbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_COMPILE3:
+                    return Compile3Symbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_ENVBLOCK:
+                    return EnvironmentBlockSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_BUILDINFO:
+                    return BuildInfoSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_FRAMEPROC:
+                    return FrameProcedureSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_LABEL32:
+                    return LabelSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_HEAPALLOCSITE:
+                    return HeapAllocationSiteSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_CALLSITEINFO:
+                    return CallSiteInfoSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_FRAMECOOKIE:
+                    return FrameCookieSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_THUNK32:
+                    return Thunk32Symbol.Read(Reader, this, index, reference.Kind, reference.DataLen);
+                case SymbolRecordKind.S_LOCAL:
+                    return LocalSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_DEFRANGE_REGISTER:
+                    return DefRangeRegisterSymbol.Read(Reader, this, index, reference.Kind, reference.DataLen);
+                case SymbolRecordKind.S_DEFRANGE_REGISTER_REL:
+                    return DefRangeRegisterRelativeSymbol.Read(Reader, this, index, reference.Kind, reference.DataLen);
+                case SymbolRecordKind.S_DEFRANGE_SUBFIELD_REGISTER:
+                    return DefRangeSubfieldRegisterSymbol.Read(Reader, this, index, reference.Kind, reference.DataLen);
+                case SymbolRecordKind.S_DEFRANGE_FRAMEPOINTER_REL:
+                    return DefRangeFramePointerRelativeSymbol.Read(Reader, this, index, reference.Kind, reference.DataLen);
+                case SymbolRecordKind.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE:
+                    return DefRangeFramePointerRelativeFullScopeSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_CALLEES:
+                case SymbolRecordKind.S_CALLERS:
+                    return FunctionListSymbol.Read(Reader, this, index, reference.Kind, reference.DataLen);
+                case SymbolRecordKind.S_FILESTATIC:
+                    return FileStaticSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_TRAMPOLINE:
+                    return TrampolineSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_SECTION:
+                    return SectionSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_COFFGROUP:
+                    return CoffGroupSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_EXPORT:
+                    return ExportSymbol.Read(Reader, this, index, reference.Kind);
+                case SymbolRecordKind.S_INLINESITE:
+                    return InlineSiteSymbol.Read(Reader, this, index, reference.Kind, reference.DataLen);
                 default:
 #if DEBUG
                     throw new NotImplementedException($"Unknown reference kind: {reference.Kind}");

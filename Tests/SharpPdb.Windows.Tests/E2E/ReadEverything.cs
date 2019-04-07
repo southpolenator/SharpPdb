@@ -39,6 +39,14 @@ namespace SharpPdb.Windows.Tests.E2E
             if (dbiStream.FpoStream != null)
                 Assert.NotNull(dbiStream.FpoRecords);
             Assert.NotNull(dbiStream.ECNames);
+            Assert.NotNull(dbiStream.Modules);
+            for (int i = 0; i < dbiStream.Modules.Count; i++)
+            {
+                var module = dbiStream.Modules[i];
+
+                if (module.LocalSymbolStream != null)
+                    ReadSymbolStream(module.LocalSymbolStream);
+            }
         }
 
         private void ReadSymbolStream(SymbolStream symbolStream)
@@ -57,18 +65,41 @@ namespace SharpPdb.Windows.Tests.E2E
             // Check symbol record kinds
             var allKinds = new[]
             {
+                AnnotationReferenceSymbol.Kinds,
+                AnnotationSymbol.Kinds,
                 AttributeSlotSymbol.Kinds,
                 BlockSymbol.Kinds,
+                BuildInfoSymbol.Kinds,
+                CallSiteInfoSymbol.Kinds,
                 CoffGroupSymbol.Kinds,
+                Compile2Symbol.Kinds,
+                Compile3Symbol.Kinds,
                 ConstantSymbol.Kinds,
                 DataSymbol.Kinds,
+                DefRangeFramePointerRelativeFullScopeSymbol.Kinds,
+                DefRangeFramePointerRelativeSymbol.Kinds,
+                DefRangeRegisterRelativeSymbol.Kinds,
+                DefRangeRegisterSymbol.Kinds,
+                DefRangeSubfieldRegisterSymbol.Kinds,
                 EndSymbol.Kinds,
+                EnvironmentBlockSymbol.Kinds,
+                ExportSymbol.Kinds,
+                FileStaticSymbol.Kinds,
+                FrameCookieSymbol.Kinds,
+                FrameProcedureSymbol.Kinds,
+                FunctionListSymbol.Kinds,
+                HeapAllocationSiteSymbol.Kinds,
+                InlineSiteSymbol.Kinds,
+                LabelSymbol.Kinds,
+                LocalSymbol.Kinds,
                 ManagedProcedureSymbol.Kinds,
                 NamespaceSymbol.Kinds,
+                ObjectNameSymbol.Kinds,
                 OemSymbol.Kinds,
                 ProcedureReferenceSymbol.Kinds,
                 ProcedureSymbol.Kinds,
                 Public32Symbol.Kinds,
+                RegisterRelativeSymbol.Kinds,
                 SectionSymbol.Kinds,
                 ThreadLocalDataSymbol.Kinds,
                 Thunk32Symbol.Kinds,

@@ -43,5 +43,25 @@ namespace SharpPdb.Windows.SymbolRecords
         /// Represents one of the multiple simultaneous lifetimes
         /// </summary>
         IsAlias = 0x0040,
+
+        /// <summary>
+        /// Variable is return value.
+        /// </summary>
+        IsReturnValue = 0x0080,
+
+        /// <summary>
+        /// Variable is optimized away.
+        /// </summary>
+        IsOptimizedOut = 0x0100,
+
+        /// <summary>
+        /// Variable is enregistered global.
+        /// </summary>
+        IsEnregisteredGlobal = 0x0200,
+
+        /// <summary>
+        /// Variable is enregistered static.
+        /// </summary>
+        IsEnregisteredStatic = 0x0400,
     }
 }

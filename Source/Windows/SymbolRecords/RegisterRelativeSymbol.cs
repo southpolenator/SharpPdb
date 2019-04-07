@@ -1,64 +1,57 @@
-﻿using SharpPdb.Windows.DBI;
-using SharpUtilities;
+﻿using SharpUtilities;
 
 namespace SharpPdb.Windows.SymbolRecords
 {
     /// <summary>
-    /// Represents COFF group symbol record.
+    /// Represents register relative symbol from the symbols stream.
     /// </summary>
-    public class CoffGroupSymbol : SymbolRecord
+    public class RegisterRelativeSymbol : SymbolRecord
     {
         /// <summary>
         /// Array of <see cref="SymbolRecordKind"/> that this class can read.
         /// </summary>
         public static readonly SymbolRecordKind[] Kinds = new SymbolRecordKind[]
         {
-            SymbolRecordKind.S_COFFGROUP
+            SymbolRecordKind.S_REGREL32,
         };
 
         /// <summary>
-        /// Gets the size.
-        /// </summary>
-        public uint Size { get; private set; }
-
-        /// <summary>
-        /// Gets the COFF group characteristics.
-        /// </summary>
-        public ImageSectionCharacteristics Characteristics { get; private set; }
-
-        /// <summary>
-        /// Gets the offset portion of symbol address.
+        /// Gets the offset from the register value.
         /// </summary>
         public uint Offset { get; private set; }
 
         /// <summary>
-        /// Gets the segment portion of symbol address.
+        /// Gets the symbol type.
         /// </summary>
-        public ushort Segment { get; private set; }
+        public TypeIndex Type { get; private set; }
 
         /// <summary>
-        /// Gets the name.
+        /// Gets the register id.
+        /// </summary>
+        public RegisterId Register { get; private set; }
+
+        /// <summary>
+        /// Gets the symbol name.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
-        /// Reads <see cref="CoffGroupSymbol"/> from the stream.
+        /// Reads <see cref="RegisterRelativeSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
         /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
         /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static CoffGroupSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
+        public static RegisterRelativeSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
-            return new CoffGroupSymbol
+            return new RegisterRelativeSymbol
             {
                 SymbolStream = symbolStream,
                 SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
-                Size = reader.ReadUint(),
-                Characteristics = (ImageSectionCharacteristics)reader.ReadUint(),
                 Offset = reader.ReadUint(),
-                Segment = reader.ReadUshort(),
+                Type = TypeIndex.Read(reader),
+                Register = (RegisterId)reader.ReadUshort(),
                 Name = reader.ReadCString(),
             };
         }

@@ -1,30 +1,19 @@
-﻿using SharpPdb.Windows.DBI;
-using SharpUtilities;
+﻿using SharpUtilities;
 
 namespace SharpPdb.Windows.SymbolRecords
 {
     /// <summary>
-    /// Represents COFF group symbol record.
+    /// Represents annotation symbol from the symbols stream.
     /// </summary>
-    public class CoffGroupSymbol : SymbolRecord
+    public class AnnotationSymbol : SymbolRecord
     {
         /// <summary>
         /// Array of <see cref="SymbolRecordKind"/> that this class can read.
         /// </summary>
         public static readonly SymbolRecordKind[] Kinds = new SymbolRecordKind[]
         {
-            SymbolRecordKind.S_COFFGROUP
+            SymbolRecordKind.S_ANNOTATION,
         };
-
-        /// <summary>
-        /// Gets the size.
-        /// </summary>
-        public uint Size { get; private set; }
-
-        /// <summary>
-        /// Gets the COFF group characteristics.
-        /// </summary>
-        public ImageSectionCharacteristics Characteristics { get; private set; }
 
         /// <summary>
         /// Gets the offset portion of symbol address.
@@ -37,30 +26,38 @@ namespace SharpPdb.Windows.SymbolRecords
         public ushort Segment { get; private set; }
 
         /// <summary>
-        /// Gets the name.
+        /// Gets the number of annotations.
         /// </summary>
-        public string Name { get; private set; }
+        public ushort AnnotationsCount { get; private set; }
 
         /// <summary>
-        /// Reads <see cref="CoffGroupSymbol"/> from the stream.
+        /// Gets the annotations.
+        /// </summary>
+        public string[] Annotations { get; private set; }
+
+        /// <summary>
+        /// Reads <see cref="AnnotationSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
         /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
         /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static CoffGroupSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
+        public static AnnotationSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
-            return new CoffGroupSymbol
+            var annotationSymbol = new AnnotationSymbol
             {
                 SymbolStream = symbolStream,
                 SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
-                Size = reader.ReadUint(),
-                Characteristics = (ImageSectionCharacteristics)reader.ReadUint(),
                 Offset = reader.ReadUint(),
                 Segment = reader.ReadUshort(),
-                Name = reader.ReadCString(),
+                AnnotationsCount = reader.ReadUshort(),
             };
+
+            annotationSymbol.Annotations = new string[annotationSymbol.AnnotationsCount];
+            for (int i = 0; i < annotationSymbol.Annotations.Length; i++)
+                annotationSymbol.Annotations[i] = reader.ReadCString();
+            return annotationSymbol;
         }
     }
 }

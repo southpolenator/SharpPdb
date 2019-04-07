@@ -56,7 +56,10 @@ namespace SharpPdb.Windows.DBI
             moduleStreamCache = SimpleCache.CreateStruct(() => moduleList.DbiStream.Stream.File.GetStream(ModuleStreamIndex));
             localSymbolStreamCache = SimpleCache.CreateStruct(() =>
             {
-                IBinaryReader sreader = ModuleStream.Reader.Duplicate();
+                IBinaryReader sreader = ModuleStream?.Reader?.Duplicate();
+
+                if (sreader == null)
+                    return null;
                 sreader.Position = 0;
                 int signature = sreader.ReadInt();
 

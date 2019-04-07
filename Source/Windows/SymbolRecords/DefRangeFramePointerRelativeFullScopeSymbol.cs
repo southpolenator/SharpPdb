@@ -3,33 +3,38 @@
 namespace SharpPdb.Windows.SymbolRecords
 {
     /// <summary>
-    /// Represents end of the symbol group. Usually it is being used to denote end of the children list.
+    /// Represents defrange frame pointer relative full scope symbol from the symbols stream.
     /// </summary>
-    public class EndSymbol : SymbolRecord
+    public class DefRangeFramePointerRelativeFullScopeSymbol : SymbolRecord
     {
         /// <summary>
         /// Array of <see cref="SymbolRecordKind"/> that this class can read.
         /// </summary>
         public static readonly SymbolRecordKind[] Kinds = new SymbolRecordKind[]
         {
-            SymbolRecordKind.S_END,
-            SymbolRecordKind.S_INLINESITE_END,
+            SymbolRecordKind.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE,
         };
 
         /// <summary>
-        /// Reads <see cref="EndSymbol"/> from the stream.
+        /// Gets the offset from frame pointer.
+        /// </summary>
+        public uint Offset { get; private set; }
+
+        /// <summary>
+        /// Reads <see cref="DefRangeFramePointerRelativeFullScopeSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
         /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
         /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static EndSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
+        public static DefRangeFramePointerRelativeFullScopeSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
-            return new EndSymbol
+            return new DefRangeFramePointerRelativeFullScopeSymbol
             {
                 SymbolStream = symbolStream,
                 SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
+                Offset = reader.ReadUint(),
             };
         }
     }

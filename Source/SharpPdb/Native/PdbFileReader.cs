@@ -1,5 +1,6 @@
 ﻿using SharpPdb.Native.Types;
 using SharpPdb.Windows;
+using SharpPdb.Windows.SymbolRecords;
 using SharpPdb.Windows.TypeRecords;
 using SharpUtilities;
 using System;
@@ -32,6 +33,11 @@ namespace SharpPdb.Native
         /// Cache for <see cref="PublicSymbols"/> property.
         /// </summary>
         private SimpleCacheStruct<PdbPublicSymbol[]> publicSymbolsCache;
+
+        /// <summary>
+        /// Cache for <see cref="Functions"/> property.
+        /// </summary>
+        private SimpleCacheStruct<List<PdbFunction>> functionsCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PdbFileReader"/> class.
@@ -110,6 +116,61 @@ namespace SharpPdb.Native
                     publicSymbols[i] = new PdbPublicSymbol(this, PdbFile.PublicsStream.PublicSymbols[i]);
                 return publicSymbols;
             });
+            functionsCache = SimpleCache.CreateStruct(() =>
+            {
+                List<PdbFunction> functions = new List<PdbFunction>();
+                var references = PdbFile.PdbSymbolStream?.References;
+                var modules = PdbFile.DbiStream?.Modules;
+
+                if (references != null && modules != null)
+                {
+                    HashSet<uint>[] selectedFunctions = new HashSet<uint>[modules.Count];
+
+                    for (int i = 0; i < references.Count; i++)
+                    {
+                        ProcedureSymbol procedure = null;
+
+                        switch (references[i].Kind)
+                        {
+                            // ProcedureSymbol
+                            case SymbolRecordKind.S_GPROC32:
+                            case SymbolRecordKind.S_LPROC32:
+                            case SymbolRecordKind.S_GPROC32_ID:
+                            case SymbolRecordKind.S_LPROC32_ID:
+                            case SymbolRecordKind.S_LPROC32_DPC:
+                            case SymbolRecordKind.S_LPROC32_DPC_ID:
+                                procedure = PdbFile.PdbSymbolStream[i] as ProcedureSymbol;
+                                break;
+                            // ProcedureReferenceSymbol
+                            case SymbolRecordKind.S_PROCREF:
+                            case SymbolRecordKind.S_LPROCREF:
+                                {
+                                    ProcedureReferenceSymbol procedureReference = PdbFile.PdbSymbolStream[i] as ProcedureReferenceSymbol;
+                                    int moduleIndex = procedureReference.Module - 1;
+
+                                    if (moduleIndex >= 0 && moduleIndex < modules.Count)
+                                    {
+                                        var module = modules[moduleIndex];
+
+                                        if (selectedFunctions[moduleIndex] == null)
+                                            selectedFunctions[moduleIndex] = new HashSet<uint>();
+                                        if (!selectedFunctions[moduleIndex].Contains(procedureReference.Offset)
+                                            && module.LocalSymbolStream.TryGetSymbolRecordByOffset(procedureReference.Offset, out SymbolRecord procedureSymbol))
+                                        {
+                                            procedure = procedureSymbol as ProcedureSymbol;
+                                            selectedFunctions[moduleIndex].Add(procedureReference.Offset);
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+
+                        if (procedure != null)
+                            functions.Add(new PdbFunction(this, procedure));
+                    }
+                }
+                return functions;
+            });
         }
 
         /// <summary>
@@ -131,6 +192,11 @@ namespace SharpPdb.Native
         /// Gets the public symbols from PDB file.
         /// </summary>
         public PdbPublicSymbol[] PublicSymbols => publicSymbolsCache.Value;
+
+        /// <summary>
+        /// Gets the functions from PDB file.
+        /// </summary>
+        public IReadOnlyList<PdbFunction> Functions => functionsCache.Value;
 
         /// <summary>
         /// Gets the <see cref="PdbType"/> at the specified index.

@@ -74,6 +74,55 @@ namespace SharpPdb.Native.Tests
                     CompareTypes(diaGlobalVariable.type, pdbGlobalVariable.Type, checkedTypes);
                 }
 
+                // Verify functions
+                IDiaSymbol[] diaFunctions = diaSession.globalScope.GetChildren(SymTagEnum.Function)
+                    .OrderBy(d => d.relativeVirtualAddress)
+                    .ThenBy(d => d.name).ToArray();
+                PdbFunction[] pdbFunctions = pdb.Functions
+                    .OrderBy(p => p.RelativeVirtualAddress)
+                    .ThenBy(p => p.Name).ToArray();
+
+                Assert.Equal(diaFunctions.Length, pdbFunctions.Length);
+                for (int i = 0; i < diaFunctions.Length; i++)
+                {
+                    IDiaSymbol diaFunction = diaFunctions[i];
+                    PdbFunction pdbFunction = pdbFunctions[i];
+
+                    Assert.Equal(diaFunction.addressSection, pdbFunction.Segment);
+                    Assert.Equal(diaFunction.addressOffset, pdbFunction.Offset);
+                    Assert.Equal(diaFunction.customCallingConvention, pdbFunction.HasCustomCallingConvention);
+                    Assert.Equal(diaFunction.farReturn, pdbFunction.HasFarReturn);
+                    Assert.Equal(diaFunction.framePointerPresent, pdbFunction.HasFramePointer);
+                    Assert.Equal(diaFunction.interruptReturn, pdbFunction.HasInterruptReturn);
+                    Assert.Equal(diaFunction.length, pdbFunction.CodeSize);
+                    Assert.Equal(diaFunction.noInline, pdbFunction.IsNoInline);
+                    Assert.Equal(diaFunction.notReached, pdbFunction.IsUnreachable);
+                    Assert.Equal(diaFunction.noReturn, pdbFunction.IsNoReturn);
+                    Assert.Equal(diaFunction.optimizedCodeDebugInfo, pdbFunction.HasOptimizedDebugInfo);
+                    Assert.Equal(diaFunction.name, pdbFunction.Name);
+                    Assert.Equal(diaFunction.relativeVirtualAddress, pdbFunction.RelativeVirtualAddress);
+                    CompareTypes(diaFunction.type, pdbFunction.FunctionType, checkedTypes);
+                    //Assert.Equal(diaFunction.get_undecoratedNameEx(UndecoratedNameOptions.Complete), pdbFunction.GetUndecoratedName(NameUndecorator.Flags.Complete));
+                    // TODO: hasAlloca
+                    // TODO: hasEH
+                    // TODO: hasEHa
+                    // TODO: hasInlAsm
+                    // TODO: hasLongJump
+                    // TODO: hasSecurityChecks
+                    // TODO: hasSEH
+                    // TODO: hasSetJump
+                    // TODO: intro
+                    // TODO: InlSpec
+                    // TODO: isNaked
+                    // TODO: isStatic
+                    // TODO: locationType
+                    // TODO: noStackOrdering
+                    // TODO: pure
+                    // TODO: token
+                    // TODO: virtual
+                    // TODO: virtualBaseOffset
+                }
+
                 // Verify publics
                 IDiaSymbol[] diaPublicSymbols = diaSession.globalScope.GetChildren(SymTagEnum.PublicSymbol).ToArray();
 
@@ -138,6 +187,12 @@ namespace SharpPdb.Native.Tests
 
         private static void CompareTypes(IDiaSymbol diaType, PdbType pdbType, HashSet<Tuple<uint, PdbType>> checkedTypes)
         {
+            if (diaType == null)
+            {
+                Assert.True(pdbType.TypeIndex.IsNoneType);
+                return;
+            }
+
             uint diaSymbolId = diaType.symIndexId;
             var checkedTypesTuple = Tuple.Create(diaSymbolId, pdbType);
 

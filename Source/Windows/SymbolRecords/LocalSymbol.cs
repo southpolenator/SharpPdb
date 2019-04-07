@@ -3,55 +3,49 @@
 namespace SharpPdb.Windows.SymbolRecords
 {
     /// <summary>
-    /// Represents public 32bit symbol record.
+    /// Represents local symbol from the symbols stream.
     /// </summary>
-    public class Public32Symbol : SymbolRecord
+    public class LocalSymbol : SymbolRecord
     {
         /// <summary>
         /// Array of <see cref="SymbolRecordKind"/> that this class can read.
         /// </summary>
         public static readonly SymbolRecordKind[] Kinds = new SymbolRecordKind[]
         {
-            SymbolRecordKind.S_PUB32
+            SymbolRecordKind.S_LOCAL,
         };
 
         /// <summary>
-        /// Gets public symbol flags.
+        /// Gets the symbol type.
         /// </summary>
-        public PublicSymbolFlags Flags { get; private set; }
+        public TypeIndex Type { get; private set; }
 
         /// <summary>
-        /// Gets the offset portion of symbol address.
+        /// Gets the local symbol flags.
         /// </summary>
-        public uint Offset { get; private set; }
+        public LocalVariableFlags Flags { get; private set; }
 
         /// <summary>
-        /// Gets the segment portion of symbol address.
-        /// </summary>
-        public ushort Segment { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
+        /// Gets the local symbol name.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
-        /// Reads <see cref="Public32Symbol"/> from the stream.
+        /// Reads <see cref="LocalSymbol"/> from the stream.
         /// </summary>
         /// <param name="reader">Stream binary reader.</param>
         /// <param name="symbolStream">Symbol stream that contains this symbol record.</param>
         /// <param name="symbolStreamIndex">Index in symbol stream <see cref="SymbolStream.References"/> array.</param>
         /// <param name="kind">Symbol record kind.</param>
-        public static Public32Symbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
+        public static LocalSymbol Read(IBinaryReader reader, SymbolStream symbolStream, int symbolStreamIndex, SymbolRecordKind kind)
         {
-            return new Public32Symbol
+            return new LocalSymbol
             {
                 SymbolStream = symbolStream,
                 SymbolStreamIndex = symbolStreamIndex,
                 Kind = kind,
-                Flags = (PublicSymbolFlags)reader.ReadUint(),
-                Offset = reader.ReadUint(),
-                Segment = reader.ReadUshort(),
+                Type = TypeIndex.Read(reader),
+                Flags = (LocalVariableFlags)reader.ReadUshort(),
                 Name = reader.ReadCString(),
             };
         }
