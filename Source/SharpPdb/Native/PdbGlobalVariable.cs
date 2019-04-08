@@ -31,7 +31,7 @@ namespace SharpPdb.Native
         /// <summary>
         /// Gets the global variable name.
         /// </summary>
-        public string Name => Data.Name;
+        public string Name => Data.Name.String;
 
         /// <summary>
         /// Gets the global variable type.

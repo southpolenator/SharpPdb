@@ -23,7 +23,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Gets the string.
         /// </summary>
-        public string String { get; private set; }
+        public StringReference String;
 
         /// <summary>
         /// Reads <see cref="StringIdRecord"/> from the stream.

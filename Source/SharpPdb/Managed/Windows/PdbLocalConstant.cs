@@ -31,7 +31,7 @@ namespace SharpPdb.Managed.Windows
         /// <summary>
         /// Gets the name of the local constant.
         /// </summary>
-        public string Name => Constant.Name;
+        public string Name => Constant.Name.String;
 
         /// <summary>
         /// Gets the value of the local constant.

@@ -32,7 +32,7 @@ namespace SharpPdb.Native
         /// <summary>
         /// Gets the field name.
         /// </summary>
-        public string Name => StaticDataMemberRecord.Name;
+        public string Name => StaticDataMemberRecord.Name.String;
 
         /// <summary>
         /// Gets the field type.

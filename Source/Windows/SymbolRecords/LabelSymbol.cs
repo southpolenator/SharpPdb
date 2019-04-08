@@ -33,7 +33,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the label name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name { get; private set; }
 
         /// <summary>
         /// Reads <see cref="LabelSymbol"/> from the stream.

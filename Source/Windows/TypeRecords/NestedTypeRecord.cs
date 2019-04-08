@@ -28,7 +28,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Gets the name of the nested type.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="NestedTypeRecord"/> from the stream.

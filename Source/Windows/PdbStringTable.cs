@@ -35,7 +35,7 @@ namespace SharpPdb.Windows
             stringsCache = new DictionaryCache<uint, string>((uint offset) =>
             {
                 StringsStream.Position = offset;
-                return StringsStream.ReadCString();
+                return StringsStream.ReadCString().String;
             });
 
             // Read table of offsets that can be accessed by hash function

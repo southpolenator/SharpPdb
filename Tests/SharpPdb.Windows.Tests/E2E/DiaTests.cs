@@ -57,19 +57,19 @@ namespace SharpPdb.Windows.Tests.E2E
 
                     if (udtKind == UdtKind.Union)
                     {
-                        UnionRecord unionRecord = unionRecords.FirstOrDefault(cr => !cr.IsForwardReference && cr.Name == name);
+                        UnionRecord unionRecord = unionRecords.FirstOrDefault(cr => !cr.IsForwardReference && cr.Name.String == name);
 
                         if (unionRecord == null)
-                            unionRecord = unionRecords.FirstOrDefault(cr => cr.Name == name);
+                            unionRecord = unionRecords.FirstOrDefault(cr => cr.Name.String == name);
                         Assert.NotNull(unionRecord);
                         record = unionRecord;
                     }
                     else
                     {
-                        ClassRecord classRecord = classRecords.FirstOrDefault(cr => !cr.IsForwardReference && cr.Name == name);
+                        ClassRecord classRecord = classRecords.FirstOrDefault(cr => !cr.IsForwardReference && cr.Name.String == name);
 
                         if (classRecord == null)
-                            classRecord = classRecords.FirstOrDefault(cr => cr.Name == name);
+                            classRecord = classRecords.FirstOrDefault(cr => cr.Name.String == name);
                         Assert.NotNull(classRecord);
                         record = classRecord;
                     }
@@ -271,13 +271,13 @@ namespace SharpPdb.Windows.Tests.E2E
 
             if (pdbType is TagRecord tagRecord)
             {
-                Assert.Equal(diaSymbol.name, tagRecord.Name);
+                Assert.Equal(diaSymbol.name, tagRecord.Name.String);
                 if (tagRecord.IsForwardReference)
                 {
                     // Find original type
                     Assert.True(tagRecord.HasUniqueName);
-                    Assert.NotNull(tagRecord.UniqueName);
-                    TagRecord resolvedRecord = pdb.TpiStream[pdbType.Kind].OfType<TagRecord>().LastOrDefault(r => !r.IsForwardReference && r.UniqueName == tagRecord.UniqueName);
+                    Assert.NotNull(tagRecord.UniqueName.String);
+                    TagRecord resolvedRecord = pdb.TpiStream[pdbType.Kind].OfType<TagRecord>().LastOrDefault(r => !r.IsForwardReference && r.UniqueName.String == tagRecord.UniqueName.String);
                     if (resolvedRecord == null)
                     {
                         // Verify that DIA symbol is also empty
@@ -330,13 +330,13 @@ namespace SharpPdb.Windows.Tests.E2E
                     {
                         if (fields[i] is DataMemberRecord dataMember)
                         {
-                            Assert.Equal(diaFields[i].name, dataMember.Name);
+                            Assert.Equal(diaFields[i].name, dataMember.Name.String);
                             Assert.Equal((ulong)diaFields[i].offset, dataMember.FieldOffset);
                             CompareTypes(diaFields[i].type, pdb, dataMember.Type, checkedTypes);
                         }
                         else if (fields[i] is StaticDataMemberRecord staticDataMember)
                         {
-                            Assert.Equal(diaFields[i].name, staticDataMember.Name);
+                            Assert.Equal(diaFields[i].name, staticDataMember.Name.String);
                             CompareTypes(diaFields[i].type, pdb, staticDataMember.Type, checkedTypes);
                         }
                     }

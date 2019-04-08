@@ -36,7 +36,7 @@ namespace SharpPdb.Windows.PIS
                 foreach (var kvp in HashTable.Dictionary)
                 {
                     stringsReader.Position = kvp.Key;
-                    streams.Add(stringsReader.ReadCString(), (int)kvp.Value);
+                    streams.Add(stringsReader.ReadCString().String, (int)kvp.Value);
                 }
                 return streams;
             });

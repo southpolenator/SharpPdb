@@ -36,7 +36,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the data symbol name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="ThreadLocalDataSymbol"/> from the stream.

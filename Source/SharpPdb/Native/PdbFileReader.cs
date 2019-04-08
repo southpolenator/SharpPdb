@@ -256,19 +256,19 @@ namespace SharpPdb.Native
                         {
                             TypeRecord record = PdbFile.TpiStream[bucket.TypeIndex];
 
-                            if (record is TagRecord tag && tagRecord.Name == tag.Name)
+                            if (record is TagRecord tag && tagRecord.Name.String == tag.Name.String)
                                 return tag;
                             bucket = bucket.Next;
                         }
                         return null;
                     }
 
-                    resolvedRecord = FindUdtByHash(HashTable.HashStringV1(tagRecord.Name));
+                    resolvedRecord = FindUdtByHash(HashTable.HashStringV1(tagRecord.Name.String));
                     if (resolvedRecord == null && tagRecord.HasUniqueName)
-                        resolvedRecord = FindUdtByHash(HashTable.HashStringV1(tagRecord.UniqueName));
+                        resolvedRecord = FindUdtByHash(HashTable.HashStringV1(tagRecord.UniqueName.String));
                 }
                 else
-                    resolvedRecord = PdbFile.TpiStream[typeRecord.Kind].OfType<TagRecord>().LastOrDefault(r => !r.IsForwardReference && r.UniqueName == tagRecord.UniqueName);
+                    resolvedRecord = PdbFile.TpiStream[typeRecord.Kind].OfType<TagRecord>().LastOrDefault(r => !r.IsForwardReference && r.UniqueName.String == tagRecord.UniqueName.String);
                 if (resolvedRecord != null)
                     typeRecord = resolvedRecord;
             }

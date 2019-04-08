@@ -40,7 +40,7 @@ namespace SharpPdb.Windows.SymbolRecords
             byte reserved = reader.ReadByte();
             List<string> fields = new List<string>();
 
-            for (string field = reader.ReadCString(); !string.IsNullOrEmpty(field); field = reader.ReadCString())
+            for (string field = reader.ReadCString().String; !string.IsNullOrEmpty(field); field = reader.ReadCString().String)
                 fields.Add(field);
             result.Fields = fields;
             return result;

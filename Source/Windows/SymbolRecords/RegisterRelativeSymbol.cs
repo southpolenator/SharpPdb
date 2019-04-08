@@ -33,7 +33,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the symbol name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="RegisterRelativeSymbol"/> from the stream.

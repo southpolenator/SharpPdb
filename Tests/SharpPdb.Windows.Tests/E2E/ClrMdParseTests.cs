@@ -43,17 +43,17 @@ namespace SharpPdb.Windows.Tests.E2E
 
                 // Verify DBI module 0
                 var dbiModule = dbiModules[0];
-                Assert.Equal("Foo", dbiModule.ModuleName);
+                Assert.Equal("Foo", dbiModule.ModuleName.String);
                 var localss = dbiModule.LocalSymbolStream;
                 var functions = GetManagedProcedures(localss);
                 Assert.Equal(4, functions.Length);
-                Assert.Equal("Bar", functions[0].Name);
+                Assert.Equal("Bar", functions[0].Name.String);
                 Assert.Equal(new byte[] { 0 }, ReadCustomMetadata(functions[0]));
-                Assert.Equal("Baz", functions[1].Name);
+                Assert.Equal("Baz", functions[1].Name.String);
                 Assert.Equal(new byte[] { 1 }, ReadCustomMetadata(functions[1]));
-                Assert.Equal("Baz", functions[2].Name);
+                Assert.Equal("Baz", functions[2].Name.String);
                 Assert.Equal(new byte[] { 1, 6 }, ReadCustomMetadata(functions[2]));
-                Assert.Equal(".ctor", functions[3].Name);
+                Assert.Equal(".ctor", functions[3].Name.String);
                 Assert.Equal(new byte[] { 1 }, ReadCustomMetadata(functions[3]));
                 var checksums = dbiModule.DebugSubsectionStream[DebugSubsectionKind.FileChecksums].OfType<FileChecksumSubsection>().ToArray();
                 Assert.Equal(@"C:\projects\windbgcs-dumps\Source\Clr\SharedLibrary\SharedLibrary.cs", namesStream.Dictionary[checksums[0].NameIndex]);
@@ -66,11 +66,11 @@ namespace SharpPdb.Windows.Tests.E2E
 
                 // Verify DBI module 1
                 dbiModule = dbiModules[1];
-                Assert.Equal("Struct", dbiModule.ModuleName);
+                Assert.Equal("Struct", dbiModule.ModuleName.String);
                 localss = dbiModule.LocalSymbolStream;
                 functions = GetManagedProcedures(localss);
                 Assert.Single(functions);
-                Assert.Equal(".ctor", functions[0].Name);
+                Assert.Equal(".ctor", functions[0].Name.String);
                 Assert.Equal(new byte[] { 1 }, ReadCustomMetadata(functions[0]));
                 checksums = dbiModule.DebugSubsectionStream[DebugSubsectionKind.FileChecksums].OfType<FileChecksumSubsection>().ToArray();
                 Assert.Equal(1U, checksums[0].NameIndex);
@@ -80,11 +80,11 @@ namespace SharpPdb.Windows.Tests.E2E
 
                 // Verify DBI module 2
                 dbiModule = dbiModules[2];
-                Assert.Equal("MiddleStruct", dbiModule.ModuleName);
+                Assert.Equal("MiddleStruct", dbiModule.ModuleName.String);
                 localss = dbiModule.LocalSymbolStream;
                 functions = GetManagedProcedures(localss);
                 Assert.Single(functions);
-                Assert.Equal(".ctor", functions[0].Name);
+                Assert.Equal(".ctor", functions[0].Name.String);
                 Assert.Equal(new byte[] { 1 }, ReadCustomMetadata(functions[0]));
                 checksums = dbiModule.DebugSubsectionStream[DebugSubsectionKind.FileChecksums].OfType<FileChecksumSubsection>().ToArray();
                 Assert.Equal(1U, checksums[0].NameIndex);
@@ -94,11 +94,11 @@ namespace SharpPdb.Windows.Tests.E2E
 
                 // Verify DBI module 3
                 dbiModule = dbiModules[3];
-                Assert.Equal("InnerStruct", dbiModule.ModuleName);
+                Assert.Equal("InnerStruct", dbiModule.ModuleName.String);
                 localss = dbiModule.LocalSymbolStream;
                 functions = GetManagedProcedures(localss);
                 Assert.Single(functions);
-                Assert.Equal(".ctor", functions[0].Name);
+                Assert.Equal(".ctor", functions[0].Name.String);
                 Assert.Equal(new byte[] { 1 }, ReadCustomMetadata(functions[0]));
                 checksums = dbiModule.DebugSubsectionStream[DebugSubsectionKind.FileChecksums].OfType<FileChecksumSubsection>().ToArray();
                 Assert.Equal(1U, checksums[0].NameIndex);
@@ -142,7 +142,7 @@ namespace SharpPdb.Windows.Tests.E2E
                 if (oem.Id == MsilMetadataGuid)
                 {
                     IBinaryReader reader = oem.UserDataReader;
-                    string name = reader.ReadCStringWide();
+                    string name = reader.ReadCStringWide().String;
 
                     if (name == "MD2")
                     {

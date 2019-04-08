@@ -30,7 +30,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Gets the name of method.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="OverloadedMethodRecord"/> from the stream.

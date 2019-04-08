@@ -43,7 +43,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the variable name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="AttributeSlotSymbol"/> from the stream.

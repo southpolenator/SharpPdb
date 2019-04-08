@@ -33,7 +33,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Gets the name of method.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name { get; private set; }
 
         /// <summary>
         /// Reads <see cref="OneMethodRecord"/> from the stream.

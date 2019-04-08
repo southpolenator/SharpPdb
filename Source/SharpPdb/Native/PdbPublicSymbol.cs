@@ -47,7 +47,7 @@ namespace SharpPdb.Native
         /// <summary>
         /// Gets the name.
         /// </summary>
-        public string Name => PublicSymbol.Name;
+        public string Name => PublicSymbol.Name.String;
 
         /// <summary>
         /// Gets the relative virtual address of this static field from module load address.

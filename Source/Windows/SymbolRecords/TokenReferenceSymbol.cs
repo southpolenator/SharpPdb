@@ -35,12 +35,12 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Gets the token parsed from the <see cref="Name"/>.
         /// </summary>
-        public int Token => int.Parse(Name, System.Globalization.NumberStyles.HexNumber);
+        public int Token => int.Parse(Name.String, System.Globalization.NumberStyles.HexNumber);
 
         /// <summary>
         /// Reads <see cref="TokenReferenceSymbol"/> from the stream.

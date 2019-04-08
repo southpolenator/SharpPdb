@@ -68,7 +68,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the version string.
         /// </summary>
-        public string Version { get; private set; }
+        public StringReference Version;
 
         /// <summary>
         /// Reads <see cref="Compile3Symbol"/> from the stream.

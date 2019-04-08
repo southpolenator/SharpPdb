@@ -36,6 +36,6 @@ namespace SharpPdb.Managed.Windows
         /// <summary>
         /// Gets the name of the local variable.
         /// </summary>
-        public string Name => Slot.Name;
+        public string Name => Slot.Name.String;
     }
 }

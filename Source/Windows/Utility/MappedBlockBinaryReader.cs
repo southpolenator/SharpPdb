@@ -257,11 +257,10 @@ namespace SharpPdb.Windows.Utility
         /// <summary>
         /// Reads C-style string (null terminated) from the stream.
         /// </summary>
-        public string ReadCString()
+        public StringReference ReadCString()
         {
-            long basePosition = BaseReader.Position;
-            string value = BaseReader.ReadCString();
-            uint size = (uint)(BaseReader.Position - basePosition);
+            StringReference value = BaseReader.ReadCString();
+            uint size = (uint)(value.Buffer.BytePointerLength > 0 ? value.Buffer.BytePointerLength : value.Buffer.Bytes.Length) + 1;
 
             if (size <= blockRemaining)
             {
@@ -289,27 +288,28 @@ namespace SharpPdb.Windows.Utility
             }
 
             // Rewind and fallback to slow reader (byte per byte)
-            BaseReader.Position = basePosition;
+            BaseReader.Position -= size;
 
-            StringBuilder sb = new StringBuilder();
+            List<byte> bytes = new List<byte>();
             byte b = ReadByte();
 
             while (b != 0)
             {
-                sb.Append((char)b);
+                bytes.Add(b);
                 b = ReadByte();
             }
-            return sb.ToString();
+
+            MemoryBuffer buffer = new MemoryBuffer(bytes.ToArray());
+            return new StringReference(buffer, StringReference.Encoding.UTF8);
         }
 
         /// <summary>
         /// Reads C-style wide (2 bytes) string (null terminated) from the stream.
         /// </summary>
-        public string ReadCStringWide()
+        public StringReference ReadCStringWide()
         {
-            long basePosition = BaseReader.Position;
-            string value = BaseReader.ReadCStringWide();
-            uint size = (uint)(BaseReader.Position - basePosition);
+            StringReference value = BaseReader.ReadCStringWide();
+            uint size = (uint)(value.Buffer.BytePointerLength > 0 ? value.Buffer.BytePointerLength : value.Buffer.Bytes.Length) + 2;
 
             if (size <= blockRemaining)
             {
@@ -337,7 +337,7 @@ namespace SharpPdb.Windows.Utility
             }
 
             // Rewind and fallback to slow reader (byte per byte)
-            BaseReader.Position = basePosition;
+            BaseReader.Position -= size;
 
             List<byte> bytes = new List<byte>();
             byte b1 = ReadByte();
@@ -350,7 +350,9 @@ namespace SharpPdb.Windows.Utility
                 b1 = ReadByte();
                 b2 = ReadByte();
             }
-            return Encoding.Unicode.GetString(bytes.ToArray());
+
+            MemoryBuffer buffer = new MemoryBuffer(bytes.ToArray());
+            return new StringReference(buffer, StringReference.Encoding.Unicode);
         }
 
         /// <summary>
@@ -417,6 +419,22 @@ namespace SharpPdb.Windows.Utility
                         BaseReader.Position = Blocks[blockIndex] * (long)BlockSize;
                 }
             }
+        }
+
+        /// <summary>
+        /// Reads memory buffer from the stream.
+        /// </summary>
+        /// <param name="length">Number of bytes to read from the stream.</param>
+        /// <returns>Memory buffer read from the stream.</returns>
+        public MemoryBuffer ReadBuffer(uint length)
+        {
+            if (blockRemaining < length)
+            {
+                blockRemaining -= length;
+                position += length;
+                return BaseReader.ReadBuffer(length);
+            }
+            return new MemoryBuffer(this.ReadByteArray((int)length));
         }
     }
 }

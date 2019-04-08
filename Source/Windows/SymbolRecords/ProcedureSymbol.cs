@@ -90,7 +90,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the name of procedure.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="ProcedureSymbol"/> from the stream.

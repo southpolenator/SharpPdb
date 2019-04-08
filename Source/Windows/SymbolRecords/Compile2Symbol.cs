@@ -59,7 +59,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the version string.
         /// </summary>
-        public string Version { get; private set; }
+        public StringReference Version { get; private set; }
 
         /// <summary>
         /// Gets the list of extra strings.
@@ -92,7 +92,7 @@ namespace SharpPdb.Windows.SymbolRecords
             };
             List<string> strings = new List<string>();
 
-            for (string s = reader.ReadCString(); !string.IsNullOrEmpty(s); s = reader.ReadCString())
+            for (string s = reader.ReadCString().String; !string.IsNullOrEmpty(s); s = reader.ReadCString().String)
                 strings.Add(s);
             result.ExtraStrings = strings;
             return result;

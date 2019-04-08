@@ -35,7 +35,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Gets the array name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="ArrayRecord"/> from the stream.

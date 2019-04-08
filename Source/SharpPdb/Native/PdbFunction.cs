@@ -104,7 +104,7 @@ namespace SharpPdb.Native
         /// <summary>
         /// Gets the name of procedure.
         /// </summary>
-        public string Name => Procedure.Name;
+        public string Name => Procedure.Name.String;
 
         /// <summary>
         /// Gets the relative virtual address of this static field from module load address.

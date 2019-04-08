@@ -41,7 +41,7 @@ namespace SharpPdb.Native.Types
         /// <param name="modifierOptions">The modifier options.</param>
         /// <param name="size">The type size in bytes.</param>
         internal PdbUserDefinedType(PdbFileReader pdb, TypeIndex typeIndex, TagRecord tagRecord, ModifierOptions modifierOptions, ulong size)
-            : base(pdb, typeIndex, modifierOptions, tagRecord.Name, size)
+            : base(pdb, typeIndex, modifierOptions, tagRecord.Name.String, size)
         {
             TagRecord = tagRecord;
             fieldsCache = SimpleCache.CreateStruct(EnumerateFields);
@@ -87,7 +87,7 @@ namespace SharpPdb.Native.Types
         /// <summary>
         /// Gets the unique type name.
         /// </summary>
-        public string UniqueName => TagRecord.UniqueName;
+        public string UniqueName => TagRecord.UniqueName.String;
 
         /// <summary>
         /// Gets the all fields from this type.
@@ -208,17 +208,17 @@ namespace SharpPdb.Native.Types
                         {
                             SymbolRecord record = globals.Symbols[i];
 
-                            if (record is ConstantSymbol c && c.Name == fullName)
+                            if (record is ConstantSymbol c && c.Name.String == fullName)
                             {
                                 constant = c;
                                 break;
                             }
-                            else if (record is ThreadLocalDataSymbol tls && tls.Name == fullName)
+                            else if (record is ThreadLocalDataSymbol tls && tls.Name.String == fullName)
                             {
                                 threadLocalData = tls;
                                 break;
                             }
-                            else if (record is DataSymbol ds && ds.Name == fullName)
+                            else if (record is DataSymbol ds && ds.Name.String == fullName)
                             {
                                 data = ds;
                                 break;
@@ -229,12 +229,12 @@ namespace SharpPdb.Native.Types
                     }
                     else
                     {
-                        data = Pdb.PdbFile.GlobalsStream.Data.FirstOrDefault(d => d.Name == fullName);
+                        data = Pdb.PdbFile.GlobalsStream.Data.FirstOrDefault(d => d.Name.String == fullName);
                         if (data == null)
                         {
-                            constant = Pdb.PdbFile.GlobalsStream.Constants.FirstOrDefault(c => c.Name == fullName);
+                            constant = Pdb.PdbFile.GlobalsStream.Constants.FirstOrDefault(c => c.Name.String == fullName);
                             if (constant == null)
-                                threadLocalData = Pdb.PdbFile.GlobalsStream.ThreadLocalData.FirstOrDefault(t => t.Name == fullName);
+                                threadLocalData = Pdb.PdbFile.GlobalsStream.ThreadLocalData.FirstOrDefault(t => t.Name.String == fullName);
                         }
                     }
 

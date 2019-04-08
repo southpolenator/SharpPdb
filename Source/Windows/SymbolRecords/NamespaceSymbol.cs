@@ -18,7 +18,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the namespace.
         /// </summary>
-        public string Namespace { get; private set; }
+        public StringReference Namespace;
 
         /// <summary>
         /// Reads <see cref="NamespaceSymbol"/> from the stream.

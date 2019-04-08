@@ -29,7 +29,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Gets the enumeration name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="EnumeratorRecord"/> from the stream.

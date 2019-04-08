@@ -73,7 +73,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the name of thunk.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Variant field, depending on value of <see cref="Ordinal"/>. If

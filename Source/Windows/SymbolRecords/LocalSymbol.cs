@@ -28,7 +28,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the local symbol name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="LocalSymbol"/> from the stream.

@@ -95,13 +95,13 @@ namespace SharpPdb.Windows.DBI
         /// The module name. This is usually either a full path to an object file (either directly passed to link.exe or from an archive)
         /// or a string of the form Import:&lt;dll name&gt;.
         /// </summary>
-        public string ModuleName { get; private set; }
+        public StringReference ModuleName;
 
         /// <summary>
         /// The object file name. In the case of an module that is linked directly passed to link.exe, this is the same as <see cref="ModuleName"/>.
         /// In the case of a module that comes from an archive, this is usually the full path to the archive.
         /// </summary>
-        public string ObjectFileName { get; private set; }
+        public StringReference ObjectFileName;
 
         /// <summary>
         /// Gets all files compiled into this module.

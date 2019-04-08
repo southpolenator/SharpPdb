@@ -79,7 +79,7 @@ namespace SharpPdb.Windows.DBI
                 fileNameCache = new DictionaryCache<uint, string>((uint namesOffset) =>
                 {
                     FileNamesStream.Position = namesOffset;
-                    return FileNamesStream.ReadCString();
+                    return FileNamesStream.ReadCString().String;
                 });
 
                 if (Modules.Count != modulesCount)

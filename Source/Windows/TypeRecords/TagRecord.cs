@@ -1,4 +1,6 @@
-﻿namespace SharpPdb.Windows.TypeRecords
+﻿using SharpUtilities;
+
+namespace SharpPdb.Windows.TypeRecords
 {
     /// <summary>
     /// Base class for <see cref="EnumRecord"/>, <see cref="ClassRecord"/> and <see cref="UnionRecord"/>.
@@ -45,12 +47,12 @@
         /// <summary>
         /// Gets the type name.
         /// </summary>
-        public string Name { get; protected set; }
+        public StringReference Name;
 
         /// <summary>
         /// Gets the unique type name.
         /// </summary>
-        public string UniqueName { get; protected set; }
+        public StringReference UniqueName;
 
         /// <summary>
         /// <c>true</c> if <see cref="Options"/> contain <see cref="ClassOptions.HasUniqueName"/>.

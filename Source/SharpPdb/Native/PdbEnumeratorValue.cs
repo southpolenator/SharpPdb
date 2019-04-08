@@ -32,7 +32,7 @@ namespace SharpPdb.Native
         /// <summary>
         /// Gets the enumerator name.
         /// </summary>
-        public string Name => EnumeratorRecord.Name;
+        public string Name => EnumeratorRecord.Name.String;
 
         /// <summary>
         /// Gets the enumerator value.

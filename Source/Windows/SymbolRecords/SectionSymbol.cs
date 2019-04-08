@@ -49,7 +49,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the section name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="SectionSymbol"/> from the stream.

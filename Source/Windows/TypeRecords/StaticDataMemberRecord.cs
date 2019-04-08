@@ -30,7 +30,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Gets the name of the member field.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="StaticDataMemberRecord"/> from the stream.

@@ -28,7 +28,7 @@ namespace SharpPdb.Windows.TypeRecords
         /// <summary>
         /// Gets the function name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="FunctionIdRecord"/> from the stream.

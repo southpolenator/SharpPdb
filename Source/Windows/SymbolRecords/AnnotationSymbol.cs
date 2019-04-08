@@ -33,7 +33,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the annotations.
         /// </summary>
-        public string[] Annotations { get; private set; }
+        public StringReference[] Annotations { get; private set; }
 
         /// <summary>
         /// Reads <see cref="AnnotationSymbol"/> from the stream.
@@ -54,7 +54,7 @@ namespace SharpPdb.Windows.SymbolRecords
                 AnnotationsCount = reader.ReadUshort(),
             };
 
-            annotationSymbol.Annotations = new string[annotationSymbol.AnnotationsCount];
+            annotationSymbol.Annotations = new StringReference[annotationSymbol.AnnotationsCount];
             for (int i = 0; i < annotationSymbol.Annotations.Length; i++)
                 annotationSymbol.Annotations[i] = reader.ReadCString();
             return annotationSymbol;

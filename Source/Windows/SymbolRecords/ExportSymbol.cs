@@ -28,7 +28,7 @@ namespace SharpPdb.Windows.SymbolRecords
         /// <summary>
         /// Gets the export symbol name.
         /// </summary>
-        public string Name { get; private set; }
+        public StringReference Name;
 
         /// <summary>
         /// Reads <see cref="ExportSymbol"/> from the stream.
