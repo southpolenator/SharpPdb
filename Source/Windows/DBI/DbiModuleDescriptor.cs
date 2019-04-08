@@ -1,5 +1,5 @@
-﻿using SharpPdb.Windows.Utility;
-using SharpUtilities;
+﻿using SharpUtilities;
+using System;
 
 namespace SharpPdb.Windows.DBI
 {
@@ -8,25 +8,32 @@ namespace SharpPdb.Windows.DBI
     /// </summary>
     public class DbiModuleDescriptor
     {
+        #region SimpleCache delegates
+        private Func<DbiModuleDescriptor, string[]> CallEnumerateFiles = (t) => t.EnumerateFiles();
+        private Func<DbiModuleDescriptor, PdbStream> CallEnumerateModuleStream = (t) => t.EnumerateModuleStream();
+        private Func<DbiModuleDescriptor, SymbolStream> CallEnumerateLocalSymbolStream = (t) => t.EnumerateLocalSymbolStream();
+        private Func<DbiModuleDescriptor, DebugSubsectionStream> CallEnumerateDebugSubsectionStream = (t) => t.EnumerateDebugSubsectionStream();
+        #endregion
+
         /// <summary>
         /// Cache of files compiled in this module.
         /// </summary>
-        private SimpleCacheStruct<string[]> filesCache;
+        private SimpleCacheWithContext<string[], DbiModuleDescriptor> filesCache;
 
         /// <summary>
         /// Cache of module stream.
         /// </summary>
-        private SimpleCacheStruct<PdbStream> moduleStreamCache;
+        private SimpleCacheWithContext<PdbStream, DbiModuleDescriptor> moduleStreamCache;
 
         /// <summary>
         /// Cache of local symbol debug info stream.
         /// </summary>
-        private SimpleCacheStruct<SymbolStream> localSymbolStreamCache;
+        private SimpleCacheWithContext<SymbolStream, DbiModuleDescriptor> localSymbolStreamCache;
 
         /// <summary>
         /// Cache of debug subsection stream.
         /// </summary>
-        private SimpleCacheStruct<DebugSubsectionStream> debugSubsectionStreamCache;
+        private SimpleCacheWithContext<DebugSubsectionStream, DbiModuleDescriptor> debugSubsectionStreamCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbiModuleDescriptor"/> class.
@@ -36,14 +43,7 @@ namespace SharpPdb.Windows.DBI
         public DbiModuleDescriptor(IBinaryReader reader, DbiModuleList moduleList)
         {
             ModuleList = moduleList;
-            filesCache = SimpleCache.CreateStruct(() =>
-            {
-                string[] files = new string[NumberOfFiles];
-
-                for (int i = 0; i < files.Length; i++)
-                    files[i] = ModuleList.GetFileName(i + StartingFileIndex);
-                return files;
-            });
+            filesCache = SimpleCache.CreateWithContext(this, CallEnumerateFiles);
             Header = ModuleInfoHeader.Read(reader);
             ModuleName = reader.ReadCString();
             ObjectFileName = reader.ReadCString();
@@ -53,27 +53,9 @@ namespace SharpPdb.Windows.DBI
                 reader.Position += 4 - reader.Position % 4;
 
             // Higher level API initialization
-            moduleStreamCache = SimpleCache.CreateStruct(() => moduleList.DbiStream.Stream.File.GetStream(ModuleStreamIndex));
-            localSymbolStreamCache = SimpleCache.CreateStruct(() =>
-            {
-                IBinaryReader sreader = ModuleStream?.Reader?.Duplicate();
-
-                if (sreader == null)
-                    return null;
-                sreader.Position = 0;
-                int signature = sreader.ReadInt();
-
-                if (signature != 4)
-                    throw new System.Exception("Invalid signature of module stream");
-                return new SymbolStream(sreader, SymbolDebugInfoByteSize);
-            });
-            debugSubsectionStreamCache = SimpleCache.CreateStruct(() =>
-            {
-                IBinaryReader sreader = ModuleStream.Reader.Duplicate();
-                sreader.Position = SymbolDebugInfoByteSize + C11LineInfoByteSize;
-
-                return new DebugSubsectionStream(sreader.ReadSubstream(C13LineInfoByteSize));
-            });
+            moduleStreamCache = SimpleCache.CreateWithContext(this, CallEnumerateModuleStream);
+            localSymbolStreamCache = SimpleCache.CreateWithContext(this, CallEnumerateLocalSymbolStream);
+            debugSubsectionStreamCache = SimpleCache.CreateWithContext(this, CallEnumerateDebugSubsectionStream);
         }
 
         /// <summary>
@@ -159,5 +141,41 @@ namespace SharpPdb.Windows.DBI
         /// </summary>
         public uint PdbFilePathNameIndex => Header.PdbFilePathNameIndex;
         #endregion
+
+        private string[] EnumerateFiles()
+        {
+            string[] files = new string[NumberOfFiles];
+
+            for (int i = 0; i < files.Length; i++)
+                files[i] = ModuleList.GetFileName(i + StartingFileIndex);
+            return files;
+        }
+
+        private PdbStream EnumerateModuleStream()
+        {
+            return ModuleList.DbiStream.Stream.File.GetStream(ModuleStreamIndex);
+        }
+
+        private SymbolStream EnumerateLocalSymbolStream()
+        {
+            IBinaryReader sreader = ModuleStream?.Reader?.Duplicate();
+
+            if (sreader == null)
+                return null;
+            sreader.Position = 0;
+            int signature = sreader.ReadInt();
+
+            if (signature != 4)
+                throw new System.Exception("Invalid signature of module stream");
+            return new SymbolStream(sreader, SymbolDebugInfoByteSize);
+        }
+
+        private DebugSubsectionStream EnumerateDebugSubsectionStream()
+        {
+            IBinaryReader sreader = ModuleStream.Reader.Duplicate();
+            sreader.Position = SymbolDebugInfoByteSize + C11LineInfoByteSize;
+
+            return new DebugSubsectionStream(sreader.ReadSubstream(C13LineInfoByteSize));
+        }
     }
 }

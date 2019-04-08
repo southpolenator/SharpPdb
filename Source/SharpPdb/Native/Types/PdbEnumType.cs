@@ -1,6 +1,7 @@
 ﻿using SharpPdb.Windows;
 using SharpPdb.Windows.TypeRecords;
 using SharpUtilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,10 +12,14 @@ namespace SharpPdb.Native.Types
     /// </summary>
     public class PdbEnumType : PdbUserDefinedType
     {
+        #region SimpleCache delegates
+        private Func<PdbEnumType, IReadOnlyList<PdbEnumeratorValue>> CallEnumerateValues = (t) => t.EnumerateValues();
+        #endregion
+
         /// <summary>
         /// Cache for <see cref="Values"/> property.
         /// </summary>
-        private SimpleCacheStruct<IReadOnlyList<PdbEnumeratorValue>> valuesCache;
+        private SimpleCacheWithContext<IReadOnlyList<PdbEnumeratorValue>, PdbEnumType> valuesCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PdbType"/> class.
@@ -27,14 +32,7 @@ namespace SharpPdb.Native.Types
             : base(pdb, typeIndex, enumRecord, modifierOptions, pdb[enumRecord.UnderlyingType].Size)
         {
             EnumRecord = enumRecord;
-            valuesCache = SimpleCache.CreateStruct(() =>
-            {
-                List<PdbEnumeratorValue> values = new List<PdbEnumeratorValue>();
-
-                foreach (var value in EnumerateFieldList().OfType<EnumeratorRecord>())
-                    values.Add(new PdbEnumeratorValue(this, value));
-                return (IReadOnlyList<PdbEnumeratorValue>)values;
-            });
+            valuesCache = SimpleCache.CreateWithContext(this, CallEnumerateValues);
         }
 
         /// <summary>
@@ -61,6 +59,15 @@ namespace SharpPdb.Native.Types
         public override string ToString()
         {
             return $"enum {Name} ({UnderlyingType})";
+        }
+
+        private IReadOnlyList<PdbEnumeratorValue> EnumerateValues()
+        {
+            List<PdbEnumeratorValue> values = new List<PdbEnumeratorValue>();
+
+            foreach (var value in EnumerateFieldList().OfType<EnumeratorRecord>())
+                values.Add(new PdbEnumeratorValue(this, value));
+            return values;
         }
     }
 }

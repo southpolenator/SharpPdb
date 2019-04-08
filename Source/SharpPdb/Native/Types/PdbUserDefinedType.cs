@@ -2,6 +2,7 @@
 using SharpPdb.Windows.SymbolRecords;
 using SharpPdb.Windows.TypeRecords;
 using SharpUtilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,25 +13,32 @@ namespace SharpPdb.Native.Types
     /// </summary>
     public class PdbUserDefinedType : PdbType
     {
+        #region SimpleCache delegates
+        private Func<PdbUserDefinedType, List<PdbTypeField>> CallEnumerateFields = (t) => t.EnumerateFields();
+        private Func<PdbUserDefinedType, List<PdbTypeStaticField>> CallEnumerateStaticFields = (t) => t.EnumerateStaticFields();
+        private Func<PdbUserDefinedType, List<PdbTypeBaseClass>> CallEnumerateBaseClasses = (t) => t.EnumerateBaseClasses();
+        private Func<PdbUserDefinedType, List<PdbTypeVirtualBaseClass>> CallEnumerateVirtualBaseClasses = (t) => t.EnumerateVirtualBaseClasses();
+        #endregion
+
         /// <summary>
         /// Cache for <see cref="Fields"/> property.
         /// </summary>
-        private SimpleCacheStruct<List<PdbTypeField>> fieldsCache;
+        private SimpleCacheWithContext<List<PdbTypeField>, PdbUserDefinedType> fieldsCache;
 
         /// <summary>
         /// Cache for <see cref="StaticFields"/> property.
         /// </summary>
-        private SimpleCacheStruct<List<PdbTypeStaticField>> staticFieldsCache;
+        private SimpleCacheWithContext<List<PdbTypeStaticField>, PdbUserDefinedType> staticFieldsCache;
 
         /// <summary>
         /// Cache for <see cref="BaseClasses"/> property.
         /// </summary>
-        private SimpleCacheStruct<List<PdbTypeBaseClass>> baseClassesCache;
+        private SimpleCacheWithContext<List<PdbTypeBaseClass>, PdbUserDefinedType> baseClassesCache;
 
         /// <summary>
         /// Cache for <see cref="VirtualBaseClasses"/> property.
         /// </summary>
-        private SimpleCacheStruct<List<PdbTypeVirtualBaseClass>> virtualBaseClassesCache;
+        private SimpleCacheWithContext<List<PdbTypeVirtualBaseClass>, PdbUserDefinedType> virtualBaseClassesCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PdbType"/> class.
@@ -44,39 +52,10 @@ namespace SharpPdb.Native.Types
             : base(pdb, typeIndex, modifierOptions, tagRecord.Name.String, size)
         {
             TagRecord = tagRecord;
-            fieldsCache = SimpleCache.CreateStruct(EnumerateFields);
-            staticFieldsCache = SimpleCache.CreateStruct(EnumerateStaticFields);
-            baseClassesCache = SimpleCache.CreateStruct(() =>
-            {
-                List<PdbTypeBaseClass> baseClasses = new List<PdbTypeBaseClass>();
-
-                foreach (TypeRecord field in EnumerateFieldList())
-                    if (field is BaseClassRecord baseClassRecord)
-                        baseClasses.Add(new PdbTypeBaseClass
-                        {
-                            Access = baseClassRecord.Attributes.Access,
-                            Offset = baseClassRecord.Offset,
-                            BaseType = Pdb[baseClassRecord.Type],
-                        });
-                return baseClasses;
-            });
-            virtualBaseClassesCache = SimpleCache.CreateStruct(() =>
-            {
-                List<PdbTypeVirtualBaseClass> virtualBaseClasses = new List<PdbTypeVirtualBaseClass>();
-
-                foreach (TypeRecord field in EnumerateFieldList())
-                    if (field is VirtualBaseClassRecord virtualBaseClassRecord)
-                        virtualBaseClasses.Add(new PdbTypeVirtualBaseClass
-                        {
-                            Access = virtualBaseClassRecord.Attributes.Access,
-                            BaseType = Pdb[virtualBaseClassRecord.BaseType],
-                            VirtualBasePointerType = Pdb[virtualBaseClassRecord.VirtualBasePointerType],
-                            IsDirect = virtualBaseClassRecord.Kind == TypeLeafKind.LF_VBCLASS,
-                            VirtualBasePointerOffset = virtualBaseClassRecord.VirtualBasePointerOffset,
-                            VirtualTableIndex = virtualBaseClassRecord.VirtualTableIndex,
-                        });
-                return virtualBaseClasses;
-            });
+            fieldsCache = SimpleCache.CreateWithContext(this, CallEnumerateFields);
+            staticFieldsCache = SimpleCache.CreateWithContext(this, CallEnumerateStaticFields);
+            baseClassesCache = SimpleCache.CreateWithContext(this, CallEnumerateBaseClasses);
+            virtualBaseClassesCache = SimpleCache.CreateWithContext(this, CallEnumerateVirtualBaseClasses);
         }
 
         /// <summary>
@@ -249,6 +228,39 @@ namespace SharpPdb.Native.Types
                         fields.Add(new PdbTypeStaticField(this, staticDataMemberRecord));
                 }
             return fields;
+        }
+
+        private List<PdbTypeBaseClass> EnumerateBaseClasses()
+        {
+            List<PdbTypeBaseClass> baseClasses = new List<PdbTypeBaseClass>();
+
+            foreach (TypeRecord field in EnumerateFieldList())
+                if (field is BaseClassRecord baseClassRecord)
+                    baseClasses.Add(new PdbTypeBaseClass
+                    {
+                        Access = baseClassRecord.Attributes.Access,
+                        Offset = baseClassRecord.Offset,
+                        BaseType = Pdb[baseClassRecord.Type],
+                    });
+            return baseClasses;
+        }
+
+        private List<PdbTypeVirtualBaseClass> EnumerateVirtualBaseClasses()
+        {
+            List<PdbTypeVirtualBaseClass> virtualBaseClasses = new List<PdbTypeVirtualBaseClass>();
+
+            foreach (TypeRecord field in EnumerateFieldList())
+                if (field is VirtualBaseClassRecord virtualBaseClassRecord)
+                    virtualBaseClasses.Add(new PdbTypeVirtualBaseClass
+                    {
+                        Access = virtualBaseClassRecord.Attributes.Access,
+                        BaseType = Pdb[virtualBaseClassRecord.BaseType],
+                        VirtualBasePointerType = Pdb[virtualBaseClassRecord.VirtualBasePointerType],
+                        IsDirect = virtualBaseClassRecord.Kind == TypeLeafKind.LF_VBCLASS,
+                        VirtualBasePointerOffset = virtualBaseClassRecord.VirtualBasePointerOffset,
+                        VirtualTableIndex = virtualBaseClassRecord.VirtualTableIndex,
+                    });
+            return virtualBaseClasses;
         }
 
         private static IEnumerable<TypeRecord> EnumerateFieldList(PdbFile pdb, TypeIndex fieldListIndex)

@@ -1,6 +1,7 @@
 ﻿using SharpPdb.Windows;
 using SharpPdb.Windows.TypeRecords;
 using SharpUtilities;
+using System;
 
 namespace SharpPdb.Native.Types
 {
@@ -9,10 +10,14 @@ namespace SharpPdb.Native.Types
     /// </summary>
     public class PdbFunctionType : PdbType
     {
+        #region SimpleCache delegates
+        private Func<PdbFunctionType, PdbType[]> CallEnumerateArguments = (t) => t.EnumerateArguments();
+        #endregion
+
         /// <summary>
         /// Cache for <see cref="Arguments"/> property.
         /// </summary>
-        private SimpleCacheStruct<PdbType[]> argumentsCache;
+        private SimpleCacheWithContext<PdbType[], PdbFunctionType> argumentsCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PdbFunctionType"/> class.
@@ -25,20 +30,7 @@ namespace SharpPdb.Native.Types
             : base(pdb, typeIndex, modifierOptions, string.Empty, 0)
         {
             ProcedureRecord = procedureRecord;
-            argumentsCache = SimpleCache.CreateStruct(() =>
-            {
-                TypeRecord typeRecord = Pdb.PdbFile.TpiStream[ProcedureRecord.ArgumentList];
-
-                if (typeRecord is ArgumentListRecord argumentList)
-                {
-                    PdbType[] arguments = new PdbType[argumentList.Arguments.Length];
-
-                    for (int i = 0; i < arguments.Length; i++)
-                        arguments[i] = Pdb[argumentList.Arguments[i]];
-                    return arguments;
-                }
-                return new PdbType[0];
-            });
+            argumentsCache = SimpleCache.CreateWithContext(this, CallEnumerateArguments);
         }
 
         /// <summary>
@@ -65,5 +57,20 @@ namespace SharpPdb.Native.Types
         /// Gets the function arguments.
         /// </summary>
         public PdbType[] Arguments => argumentsCache.Value;
+
+        private PdbType[] EnumerateArguments()
+        {
+            TypeRecord typeRecord = Pdb.PdbFile.TpiStream[ProcedureRecord.ArgumentList];
+
+            if (typeRecord is ArgumentListRecord argumentList)
+            {
+                PdbType[] arguments = new PdbType[argumentList.Arguments.Length];
+
+                for (int i = 0; i < arguments.Length; i++)
+                    arguments[i] = Pdb[argumentList.Arguments[i]];
+                return arguments;
+            }
+            return new PdbType[0];
+        }
     }
 }
