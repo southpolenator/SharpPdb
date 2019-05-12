@@ -76,11 +76,11 @@ namespace SharpPdb.Native.Tests
 
                 // Verify functions
                 IDiaSymbol[] diaFunctions = diaSession.globalScope.GetChildren(SymTagEnum.Function)
-                    .OrderBy(d => d.relativeVirtualAddress)
-                    .ThenBy(d => d.name).ToArray();
+                    .OrderBy(d => d.name)
+                    .ThenBy(d => d.relativeVirtualAddress).ToArray();
                 PdbFunction[] pdbFunctions = pdb.Functions
-                    .OrderBy(p => p.RelativeVirtualAddress)
-                    .ThenBy(p => p.Name).ToArray();
+                    .OrderBy(p => p.Name)
+                    .ThenBy(p => p.RelativeVirtualAddress).ToArray();
 
                 Assert.Equal(diaFunctions.Length, pdbFunctions.Length);
                 for (int i = 0; i < diaFunctions.Length; i++)
@@ -88,6 +88,7 @@ namespace SharpPdb.Native.Tests
                     IDiaSymbol diaFunction = diaFunctions[i];
                     PdbFunction pdbFunction = pdbFunctions[i];
 
+                    Assert.Equal(diaFunction.name, pdbFunction.Name);
                     Assert.Equal(diaFunction.addressSection, pdbFunction.Segment);
                     Assert.Equal(diaFunction.addressOffset, pdbFunction.Offset);
                     Assert.Equal(diaFunction.customCallingConvention, pdbFunction.HasCustomCallingConvention);
@@ -99,7 +100,6 @@ namespace SharpPdb.Native.Tests
                     Assert.Equal(diaFunction.notReached, pdbFunction.IsUnreachable);
                     Assert.Equal(diaFunction.noReturn, pdbFunction.IsNoReturn);
                     Assert.Equal(diaFunction.optimizedCodeDebugInfo, pdbFunction.HasOptimizedDebugInfo);
-                    Assert.Equal(diaFunction.name, pdbFunction.Name);
                     Assert.Equal(diaFunction.relativeVirtualAddress, pdbFunction.RelativeVirtualAddress);
                     CompareTypes(diaFunction.type, pdbFunction.FunctionType, checkedTypes);
                     //Assert.Equal(diaFunction.get_undecoratedNameEx(UndecoratedNameOptions.Complete), pdbFunction.GetUndecoratedName(NameUndecorator.Flags.Complete));

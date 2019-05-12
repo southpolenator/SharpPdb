@@ -272,14 +272,67 @@ namespace SharpPdb.Windows
         /// </summary>
         /// <param name="segment">Section where symbol is located.</param>
         /// <param name="offset">Offset within the section.</param>
-        public ulong FindRelativeVirtualAddress(ushort segment, uint offset)
+        /// <param name="fixNullInOmap">Flag that specified if null value should be fixed if found in omap.</param>
+        public ulong FindRelativeVirtualAddress(ushort segment, uint offset, bool fixNullInOmap = false)
         {
             var dbi = DbiStream;
-            var sections = dbi?.SectionHeaders;
+            var sections = dbi?.OriginalSectionHeaders ?? dbi?.SectionHeaders;
 
             if (sections == null || segment == 0 || segment > sections.Length)
                 return 0;
-            return sections[segment - 1].VirtualAddress + offset;
+
+            uint rva = sections[segment - 1].VirtualAddress + offset;
+            var omap = dbi?.OmapFromSourceEntries;
+
+            if (omap != null && omap.Length > 0)
+            {
+                // Binary search omap to find address map
+                int index = -1;
+                int min = 0, max = omap.Length - 1;
+
+                while (min <= max)
+                {
+                    int mid = min + (max - min) / 2;
+                    var entry = omap[mid];
+
+                    if (entry.From == rva)
+                    {
+                        index = mid;
+                        break;
+                    }
+                    else if (rva < entry.From)
+                        max = mid - 1;
+                    else
+                        min = mid + 1;
+                }
+                if (index != -1)
+                {
+                    // Did we find correct entry
+                    if (!fixNullInOmap || omap[index].To != 0)
+                        rva = omap[index].To;
+                    else
+                    {
+                        // Try to find first correct entry before this one and calculate relative address from it.
+                        while (index > 0 && omap[index].To == 0)
+                            index--;
+                        rva = omap[index].To + (rva - omap[index].From);
+                    }
+                }
+                else
+                {
+                    // Verify that address was inside omap range.
+                    if (rva < omap[0].From)
+                        return 0;
+
+                    // Try to find entry that points to non zero value
+                    while (min >= 0 && (omap[min].From > rva || omap[min].To == 0))
+                        min--;
+                    if (min < 0)
+                        return 0;
+                    rva = omap[min].To + (rva - omap[min].From);
+                }
+            }
+            return rva;
         }
 
         /// <summary>

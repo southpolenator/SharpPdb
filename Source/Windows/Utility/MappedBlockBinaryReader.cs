@@ -260,7 +260,7 @@ namespace SharpPdb.Windows.Utility
         public StringReference ReadCString()
         {
             StringReference value = BaseReader.ReadCString();
-            uint size = (uint)(value.Buffer.BytePointerLength > 0 ? value.Buffer.BytePointerLength : value.Buffer.Bytes.Length) + 1;
+            uint size = (uint)value.Buffer.Bytes.Length + 1;
 
             if (size <= blockRemaining)
             {
@@ -309,7 +309,7 @@ namespace SharpPdb.Windows.Utility
         public StringReference ReadCStringWide()
         {
             StringReference value = BaseReader.ReadCStringWide();
-            uint size = (uint)(value.Buffer.BytePointerLength > 0 ? value.Buffer.BytePointerLength : value.Buffer.Bytes.Length) + 2;
+            uint size = (uint)value.Buffer.Bytes.Length + 2;
 
             if (size <= blockRemaining)
             {

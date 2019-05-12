@@ -57,7 +57,40 @@ namespace SharpPdb.Native
         /// <summary>
         /// <c>true</c> if the symbol's location is in code.
         /// </summary>
-        public bool IsCode => (Flags & (PublicSymbolFlags.Code | PublicSymbolFlags.Function)) != 0;
+        public bool IsCode
+        {
+            get
+            {
+                if ((Flags & (PublicSymbolFlags.Code | PublicSymbolFlags.Function)) != 0)
+                    return true;
+
+                // It seems that DIA is doing additional checks when there are no flags specified.
+                // After testing multiple PDBs it looks like answer is comming from section contributions.
+                if (Flags == PublicSymbolFlags.None)
+                {
+                    var sections = Pdb.PdbFile.DbiStream?.SectionContributions;
+
+                    if (sections != null)
+                    {
+                        int min = 0, max = sections.Length - 1;
+
+                        while (min <= max)
+                        {
+                            int mid = min + (max - min) / 2;
+                            var sc = sections[mid];
+
+                            if (sc.Section == Segment && sc.Offset <= Offset && Offset < sc.Offset + sc.SectionSize)
+                                return (sc.Characteristics & Windows.DBI.ImageSectionCharacteristics.ContainsCode) == Windows.DBI.ImageSectionCharacteristics.ContainsCode;
+                            else if (sc.Section > Segment || (sc.Section == Segment && sc.Offset > Offset))
+                                max = mid - 1;
+                            else
+                                min = mid + 1;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
 
         /// <summary>
         /// <c>true</c> if the symbol is a function.
