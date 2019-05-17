@@ -16,6 +16,7 @@ namespace SharpPdb.Native.Tests
         [InlineData(1)]
         [InlineData(5)]
         [InlineData(6)]
+        [InlineData(7)]
         public void TestPdb(int pdbIndex)
         {
             if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
