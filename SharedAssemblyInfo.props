@@ -1,11 +1,11 @@
 <Project>
   <PropertyGroup>
     <!-- Nuget properties -->
-    <AssemblyVersion>1.0.3</AssemblyVersion>
-    <FileVersion>1.0.3</FileVersion>
-    <VersionPrefix>1.0.3</VersionPrefix>
-    <Authors>SharpStar Team</Authors>
-    <Copyright>Copyright (C) SharpStar team 2015-2019</Copyright>
+    <AssemblyVersion>1.0.4</AssemblyVersion>
+    <FileVersion>1.0.4</FileVersion>
+    <VersionPrefix>1.0.4</VersionPrefix>
+    <Authors>Vuk Jovanovic</Authors>
+    <Copyright>Copyright (C) Vuk Jovanovic 2015-2019</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/southpolenator/SharpPdb</PackageProjectUrl>
     <!--<PackageIconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</PackageIconUrl>-->
