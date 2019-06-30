@@ -1,4 +1,4 @@
-language: csharp
+language: none
 mono: none
 sudo: required
 dist: bionic
