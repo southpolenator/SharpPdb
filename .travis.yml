@@ -1,10 +1,11 @@
 language: csharp
 mono: none
 sudo: required
-dist: xenial
+dist: bionic
 dotnet: 2.2
 script:
   - dotnet build
   - dotnet pack
   - cd pdbs;bash ./download.sh;cd ../
-  - dotnet test
+  - dotnet test Tests/SharpPdb.Windows.Tests/SharpPdb.Windows.Tests.csproj
+  - dotnet test Tests/SharpPdb.Tests/SharpPdb.Tests.csproj
