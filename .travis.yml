@@ -7,7 +7,7 @@ install:
   - sudo dpkg -i packages-microsoft-prod.deb
   - sudo apt-get install apt-transport-https
   - sudo apt-get update
-  - sudo apt-get install -y dotnet-sdk-2.2 dotnet-runtime-2.2 aspnetcore-runtime-2.2 dotnet-runtime-deps-2.2
+  - sudo apt-get install -y dotnet-sdk-2.2 dotnet-runtime-2.2 aspnetcore-runtime-2.2 dotnet-runtime-deps-2.2 libicu55
 script:
   - dotnet build
   - dotnet pack
