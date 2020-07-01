@@ -110,7 +110,7 @@ namespace SharpPdb.Windows
             SuperBlock = MSF.SuperBlock.Read(Reader);
 
             SuperBlock.Validate();
-            if (File.Length % SuperBlock.BlockSize != 0)
+            if (Reader.Length % SuperBlock.BlockSize != 0)
                 throw new Exception("File size is not a multiple of block size");
 
             // Initialize Free Page Map.
@@ -161,7 +161,7 @@ namespace SharpPdb.Windows
                 {
                     ulong blockEndOffset = SuperBlock.BlocksToBytes(block + 1);
 
-                    if (blockEndOffset > (ulong)File.Length)
+                    if (blockEndOffset > (ulong)Reader.Length)
                         throw new Exception("Stream block map is corrupt.");
                 }
 
