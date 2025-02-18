@@ -154,6 +154,7 @@ namespace SharpPdb.Windows.MSF
                 case 1024:
                 case 2048:
                 case 4096:
+                case 8192:
                     return true;
                 default:
                     return false;
